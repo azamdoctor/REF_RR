@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Реферальная программа РР — прототипы v1</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #eef1f5;
+    color: #1a2733;
+    min-height: 100vh;
+  }
+  /* ---------- ВЕРХНЯЯ НАВИГАЦИЯ ---------- */
+  .top-nav {
+    background: #1e3a5f;
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-nav h1 { font-size: 16px; font-weight: 600; }
+  .top-nav .badge { background: rgba(255,255,255,0.18); padding: 3px 10px; border-radius: 12px; font-size: 11px; }
+  .top-nav .spacer { flex: 1; }
+  .surface-tabs { display: flex; gap: 6px; }
+  .surface-tabs button {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .surface-tabs button:hover { background: rgba(255,255,255,0.2); }
+  .surface-tabs button.active { background: white; color: #1e3a5f; font-weight: 600; }
+
+  /* ---------- КОНТЕЙНЕР ---------- */
+  .stage { padding: 30px; display: flex; justify-content: center; }
+
+  /* ---------- МОБИЛЬНОЕ ПРИЛОЖЕНИЕ ---------- */
+  .phone-wrap { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .phone {
+    width: 340px;
+    height: 720px;
+    background: #f6f7fa;
+    border-radius: 38px;
+    border: 10px solid #1a2733;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 18px 42px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+  }
+  .phone .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 22px; background: #1a2733;
+    border-radius: 0 0 14px 14px; z-index: 5;
+  }
+  .phone-status {
+    padding: 8px 22px 4px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; font-weight: 600; color: #1a2733;
+    margin-top: 10px;
+  }
+  .phone-header {
+    padding: 8px 16px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e6e9ee;
+    background: #f6f7fa;
+  }
+  .phone-header h2 { font-size: 17px; font-weight: 600; color: #1a2733; }
+  .phone-body { flex: 1; overflow-y: auto; padding: 14px; }
+  .phone-tabbar {
+    background: white; border-top: 1px solid #e6e9ee;
+    display: flex; padding: 8px 0 14px;
+  }
+  .phone-tabbar .tab {
+    flex: 1; text-align: center; font-size: 10px; color: #9aa3ad;
+    cursor: pointer;
+  }
+  .phone-tabbar .tab.active { color: #1a2733; }
+  .phone-tabbar .icon { font-size: 18px; display: block; margin-bottom: 2px; }
+  .phone-title-screen { font-size: 11px; color: #6b7785; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600; }
+  .phone-label { font-size: 13px; color: #1a2733; margin-bottom: 6px; padding: 0 4px; font-weight: 500; }
+
+  /* карточки в мобилке */
+  .m-card {
+    background: white; border-radius: 14px; padding: 14px;
+    margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .m-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #1a2733; }
+  .m-card .muted { color: #6b7785; font-size: 12px; }
+  .ref-hero {
+    background: linear-gradient(135deg, #2a4a7a 0%, #1e3a5f 100%);
+    color: white;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .ref-hero .title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .ref-hero .sub { font-size: 12px; opacity: 0.85; line-height: 1.4; }
+  .ref-hero .amount { font-size: 26px; font-weight: 700; margin: 10px 0 4px; }
+  .ref-link-box {
+    background: rgba(255,255,255,0.15);
+    border: 1px dashed rgba(255,255,255,0.4);
+    padding: 10px 12px; border-radius: 8px;
+    font-size: 12px; font-family: monospace;
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 10px 0;
+  }
+  .copy-btn { background: white; color: #1e3a5f; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .share-row { display: flex; gap: 8px; margin-top: 10px; }
+  .share-btn {
+    flex: 1; background: white; color: #1e3a5f;
+    border: none; padding: 10px; border-radius: 8px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .qr-block {
+    display: flex; gap: 12px; align-items: center; margin-top: 12px;
+    padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;
+  }
+  .qr-img {
+    width: 64px; height: 64px; background: white; border-radius: 6px;
+    background-image: linear-gradient(45deg, #1a2733 25%, transparent 25%), linear-gradient(-45deg, #1a2733 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1a2733 75%), linear-gradient(-45deg, transparent 75%, #1a2733 75%);
+    background-size: 8px 8px;
+    background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  }
+
+  .stat-row { display: flex; gap: 8px; margin: 12px 0 4px; }
+  .stat-cell {
+    flex: 1; background: #f0f3f7; border-radius: 10px; padding: 10px 8px; text-align: center;
+  }
+  .stat-cell .v { font-size: 18px; font-weight: 700; color: #1a2733; }
+  .stat-cell .l { font-size: 10px; color: #6b7785; margin-top: 2px; }
+
+  /* список рефералов */
+  .ref-item {
+    padding: 12px 0; border-bottom: 1px solid #eef0f3;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ref-item:last-child { border-bottom: none; }
+  .ref-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #e8edf3; color: #1e3a5f;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; flex-shrink: 0;
+  }
+  .ref-info { flex: 1; min-width: 0; }
+  .ref-name { font-size: 13px; font-weight: 600; color: #1a2733; }
+  .ref-meta { font-size: 11px; color: #6b7785; margin-top: 2px; }
+  .ref-sum { text-align: right; }
+  .ref-sum .amt { font-size: 14px; font-weight: 700; color: #1e3a5f; }
+  .ref-sum .status-mini { font-size: 10px; margin-top: 2px; }
+  .progress-bar {
+    height: 4px; background: #e8edf3; border-radius: 2px;
+    margin-top: 6px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; background: #4caf7e; border-radius: 2px; }
+
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .tag-active { background: #e3f3ea; color: #2c7a4a; }
+  .tag-frozen { background: #fef3d7; color: #8a6500; }
+  .tag-pending { background: #e6effa; color: #1e3a5f; }
+  .tag-cancelled { background: #fbe4e4; color: #a13030; }
+  .tag-paid { background: #e3f3ea; color: #2c7a4a; }
+
+  /* история начислений */
+  .tx-item {
+    padding: 12px 0; border-bottom: 1px solid #eef0f3;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .tx-icon {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .tx-icon.income { background: #e3f3ea; color: #2c7a4a; }
+  .tx-icon.frozen { background: #fef3d7; color: #8a6500; }
+  .tx-icon.cancel { background: #fbe4e4; color: #a13030; }
+  .tx-body { flex: 1; }
+  .tx-title { font-size: 13px; font-weight: 600; color: #1a2733; }
+  .tx-sub { font-size: 11px; color: #6b7785; margin-top: 2px; }
+  .tx-amount { font-size: 14px; font-weight: 700; }
+  .tx-amount.plus { color: #2c7a4a; }
+  .tx-amount.minus { color: #a13030; }
+  .tx-amount.muted { color: #8a6500; }
+
+  /* филтр-таб */
+  .seg-tabs { display: flex; background: #e8edf3; border-radius: 10px; padding: 3px; margin-bottom: 12px; }
+  .seg-tabs button {
+    flex: 1; padding: 7px 10px; border: none; background: transparent;
+    border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 500; color: #6b7785;
+  }
+  .seg-tabs button.active { background: white; color: #1a2733; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+
+  /* ---------- CRM ---------- */
+  .crm-frame {
+    width: 100%;
+    max-width: 1400px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    display: flex;
+    min-height: 760px;
+  }
+  .crm-sidebar {
+    width: 56px;
+    background: #ffffff;
+    border-right: 1px solid #e6e9ee;
+    padding: 16px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    flex-shrink: 0;
+  }
+  .crm-sidebar .logo {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a6fa5, #2a4a7a);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; line-height: 1.1; text-align: center;
+    margin-bottom: 10px;
+  }
+  .crm-sidebar .nav-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #6b7785; font-size: 18px; cursor: pointer;
+  }
+  .crm-sidebar .nav-icon.active { background: #e8edf3; color: #1e3a5f; }
+  .crm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .crm-top {
+    background: #1e88e5;
+    padding: 14px 24px;
+    color: white;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .crm-top .title { font-size: 16px; font-weight: 600; }
+  .crm-top .right { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; }
+  .crm-top .bell { position: relative; }
+  .crm-top .bell .dot {
+    position: absolute; top: -4px; right: -4px;
+    background: #e53935; color: white; font-size: 10px; padding: 1px 5px;
+    border-radius: 8px; font-weight: 600;
+  }
+
+  .crm-tabs {
+    background: white; border-bottom: 1px solid #e6e9ee;
+    padding: 0 24px; display: flex; gap: 4px;
+  }
+  .crm-tabs button {
+    background: none; border: none; padding: 14px 18px;
+    font-size: 13px; cursor: pointer; color: #6b7785;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+  }
+  .crm-tabs button.active { color: #1e88e5; border-bottom-color: #1e88e5; font-weight: 600; }
+
+  .crm-content { padding: 24px; flex: 1; overflow-y: auto; background: #f6f8fb; }
+
+  /* KPI карточки */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: white; border-radius: 10px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .kpi-card .label { font-size: 11px; color: #6b7785; text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-card .value { font-size: 22px; font-weight: 700; color: #1a2733; margin-top: 6px; }
+  .kpi-card .delta { font-size: 11px; margin-top: 4px; }
+  .delta.up { color: #2c7a4a; }
+  .delta.down { color: #a13030; }
+
+  .panel {
+    background: white; border-radius: 10px; padding: 18px;
+    margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: #1a2733; display: flex; justify-content: space-between; align-items: center; }
+  .panel h3 .small-link { font-size: 12px; color: #1e88e5; font-weight: 500; cursor: pointer; }
+
+  /* Воронка */
+  .funnel { display: flex; gap: 2px; }
+  .funnel-step {
+    flex: 1; padding: 12px; background: #e8edf3; border-radius: 4px;
+    text-align: center; position: relative;
+  }
+  .funnel-step:nth-child(1) { background: #c5d4e8; }
+  .funnel-step:nth-child(2) { background: #b3c5dd; }
+  .funnel-step:nth-child(3) { background: #95afcd; }
+  .funnel-step:nth-child(4) { background: #7798bf; }
+  .funnel-step:nth-child(5) { background: #5a82b0; color: white; }
+  .funnel-step:nth-child(6) { background: #3d6ca2; color: white; }
+  .funnel-step .v { font-size: 18px; font-weight: 700; }
+  .funnel-step .l { font-size: 10px; margin-top: 2px; opacity: 0.85; }
+  .funnel-step .conv {
+    position: absolute; top: -16px; right: -8px; background: white;
+    border: 1px solid #d4dae3; padding: 1px 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 600; color: #6b7785; z-index: 2;
+  }
+
+  /* график-плейсхолдер */
+  .chart-area { height: 220px; position: relative; }
+  .chart-bars { display: flex; align-items: flex-end; height: 180px; gap: 4px; padding: 0 6px; border-bottom: 1px solid #e6e9ee; }
+  .chart-bars .bar {
+    flex: 1; background: linear-gradient(180deg, #4a6fa5 0%, #1e88e5 100%); border-radius: 3px 3px 0 0;
+    position: relative;
+  }
+  .chart-bars .bar:hover::after {
+    content: attr(data-v); position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    background: #1a2733; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .chart-axis { display: flex; justify-content: space-between; font-size: 10px; color: #9aa3ad; padding: 6px 6px 0; }
+
+  /* таблица */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    text-align: left; padding: 10px 8px; background: #f0f3f7;
+    color: #6b7785; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+    border-bottom: 1px solid #e6e9ee;
+  }
+  .data-table td { padding: 10px 8px; border-bottom: 1px solid #eef0f3; color: #1a2733; }
+  .data-table tr:hover td { background: #fafbfc; }
+  .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-pill {
+    background: white; border: 1px solid #d4dae3;
+    padding: 8px 14px; border-radius: 20px; font-size: 12px; color: #6b7785;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .filter-pill.has-value { background: #e8f1fb; border-color: #1e88e5; color: #1e88e5; }
+  .filter-pill .x { color: #9aa3ad; font-size: 14px; }
+  .search-box { flex: 1; min-width: 200px; }
+  .search-box input { width: 100%; padding: 8px 14px; border: 1px solid #d4dae3; border-radius: 20px; font-size: 12px; }
+  .btn-primary {
+    background: #1e88e5; color: white; border: none;
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-secondary {
+    background: white; color: #1a2733; border: 1px solid #d4dae3;
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* финансы */
+  .fin-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .stacked-bars { display: flex; align-items: flex-end; height: 220px; gap: 12px; padding: 0 8px; border-bottom: 1px solid #e6e9ee; }
+  .stacked-bars .col {
+    flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+    border-radius: 4px 4px 0 0; overflow: hidden;
+  }
+  .stacked-bars .seg-ms { background: #1e88e5; }
+  .stacked-bars .seg-rs { background: #6db4ee; }
+  .stacked-bars .seg-bonus { background: #b8d8f5; }
+  .month-axis { display: flex; padding: 6px 8px 0; font-size: 10px; color: #9aa3ad; }
+  .month-axis div { flex: 1; text-align: center; }
+  .legend { display: flex; gap: 16px; margin-top: 12px; }
+  .legend .item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7785; }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+
+  .forecast-row {
+    display: flex; justify-content: space-between; padding: 12px 0;
+    border-bottom: 1px solid #eef0f3;
+  }
+  .forecast-row:last-child { border-bottom: none; }
+  .forecast-row .lbl { font-size: 13px; color: #6b7785; }
+  .forecast-row .val { font-size: 14px; font-weight: 600; color: #1a2733; }
+
+  /* экраны мобилки */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .crm-screen { display: none; }
+  .crm-screen.active { display: block; }
+
+  .top-block {
+    display: flex; gap: 16px; margin-bottom: 16px;
+  }
+  .top-block .panel { flex: 1; margin-bottom: 0; }
+
+  .alert-banner {
+    background: #fff8e1; border-left: 3px solid #f5a623;
+    padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #8a6500;
+    margin-bottom: 16px;
+  }
+
+  /* footer note */
+  .stage-note {
+    max-width: 1400px; margin: 30px auto 0; padding: 16px 20px;
+    background: white; border-radius: 8px; font-size: 12px; color: #6b7785; line-height: 1.6;
+    border: 1px dashed #d4dae3;
+  }
+  .stage-note b { color: #1a2733; }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <h1>Реферальная программа «Рабочие Руки» — прототипы UI</h1>
+  <span class="badge">v1 · 13.05.2026</span>
+  <div class="spacer"></div>
+  <div class="surface-tabs">
+    <button class="active" onclick="showSurface('mobile')">Мобильное приложение</button>
+    <button onclick="showSurface('crm')">CRM (Bitrix24)</button>
+  </div>
+</div>
+
+<!-- ========== МОБИЛЬНОЕ ПРИЛОЖЕНИЕ ========== -->
+<div class="stage" id="surface-mobile">
+  <div class="phone-wrap">
+
+    <!-- Экран 1: Главная с виджетом -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phone-status">
+        <span>13:46</span>
+        <span>• • •  📶  🔋</span>
+      </div>
+      <div class="phone-header">
+        <h2>Личный кабинет</h2>
+        <span style="font-size:20px;">🔔</span>
+      </div>
+      <div class="phone-body">
+        <div class="phone-title-screen">Экран 1 · Главная — виджет «Пригласи друга»</div>
+
+        <!-- существующий блок СБП (как на скрине) -->
+        <div class="m-card" style="background: #f0f3f7;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Вы получите деньги по СБП:</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:18px;">📱</span>
+            <span style="font-family:monospace;font-size:13px;color:#6b7785;">+7 (***) ***-91-55</span>
+            <span style="margin-left:auto;color:#2c7a4a;">✓</span>
+          </div>
+        </div>
+
+        <!-- НОВОЕ: виджет реф-программы -->
+        <div class="ref-hero">
+          <div class="title">🎁 Пригласи друга — получи до 8 000 ₽</div>
+          <div class="sub">Каждый раз, когда друг выходит на смену, ты получаешь часть комиссии платформы. Бонус действует первые 60 смен.</div>
+
+          <div class="amount">12 480 ₽</div>
+          <div style="font-size:11px;opacity:0.85;">заработано всего · 3 активных реферала</div>
+
+          <div class="ref-link-box">
+            <span>wh.ru/r/A8X3K9P2</span>
+            <button class="copy-btn">Копировать</button>
+          </div>
+
+          <div class="share-row">
+            <button class="share-btn">💬 WhatsApp</button>
+            <button class="share-btn">✈️ Telegram</button>
+            <button class="share-btn">📤 Ещё</button>
+          </div>
+
+          <div class="qr-block">
+            <div class="qr-img"></div>
+            <div style="font-size:11px;line-height:1.4;">QR-код для показа другу.<br/>Нажми — увеличить.</div>
+          </div>
+        </div>
+
+        <!-- мини-статы -->
+        <div class="stat-row">
+          <div class="stat-cell">
+            <div class="v">7</div>
+            <div class="l">приглашено</div>
+          </div>
+          <div class="stat-cell">
+            <div class="v">3</div>
+            <div class="l">активных</div>
+          </div>
+          <div class="stat-cell">
+            <div class="v">42</div>
+            <div class="l">их смен</div>
+          </div>
+        </div>
+
+        <!-- как это работает -->
+        <div class="m-card">
+          <h3>Как это работает</h3>
+          <div style="font-size:12px;line-height:1.6;color:#1a2733;">
+            <div style="display:flex;gap:10px;margin-bottom:8px;"><b style="color:#1e88e5;">1.</b>Поделись ссылкой с другом</div>
+            <div style="display:flex;gap:10px;margin-bottom:8px;"><b style="color:#1e88e5;">2.</b>Друг регистрируется и получает СМЗ — <b>+100 ₽</b></div>
+            <div style="display:flex;gap:10px;margin-bottom:8px;"><b style="color:#1e88e5;">3.</b>Друг выходит на 1-ю смену — <b>+500 ₽</b></div>
+            <div style="display:flex;gap:10px;margin-bottom:8px;"><b style="color:#1e88e5;">4.</b>10-я смена — <b>+2 500 ₽</b></div>
+            <div style="display:flex;gap:10px;"><b style="color:#1e88e5;">5.</b>+ % с каждой смены друга до 60-й</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab"><span class="icon">🏠</span>Главная</div>
+        <div class="tab active"><span class="icon">👥</span>Друзья</div>
+        <div class="tab"><span class="icon">📋</span>Задания</div>
+        <div class="tab"><span class="icon">📍</span>Карта</div>
+        <div class="tab"><span class="icon">👤</span>Профиль</div>
+      </div>
+    </div>
+
+    <!-- Экран 2: Список рефералов -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phone-status">
+        <span>13:47</span>
+        <span>• • •  📶  🔋</span>
+      </div>
+      <div class="phone-header">
+        <h2>← Мои рефералы</h2>
+        <span style="font-size:18px;">⋯</span>
+      </div>
+      <div class="phone-body">
+        <div class="phone-title-screen">Экран 2 · Список приведённых</div>
+
+        <div class="seg-tabs">
+          <button class="active">Активные (3)</button>
+          <button>Все (7)</button>
+          <button>Закрыто (4)</button>
+        </div>
+
+        <div class="m-card">
+          <div class="ref-item">
+            <div class="ref-avatar">М</div>
+            <div class="ref-info">
+              <div class="ref-name">М***ил К.</div>
+              <div class="ref-meta">15 смен из 60 · <span class="tag tag-active">актив</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:25%;"></div></div>
+            </div>
+            <div class="ref-sum">
+              <div class="amt">3 760 ₽</div>
+              <div class="status-mini muted" style="color:#6b7785;font-size:10px;">накопл.</div>
+            </div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-avatar">А</div>
+            <div class="ref-info">
+              <div class="ref-name">А***ей Н.</div>
+              <div class="ref-meta">23 смены из 60 · <span class="tag tag-active">актив</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:38%;"></div></div>
+            </div>
+            <div class="ref-sum">
+              <div class="amt">4 140 ₽</div>
+              <div class="status-mini muted" style="color:#6b7785;font-size:10px;">накопл.</div>
+            </div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-avatar">С</div>
+            <div class="ref-info">
+              <div class="ref-name">С***ей В.</div>
+              <div class="ref-meta">4 смены из 60 · <span class="tag tag-active">актив</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:7%;"></div></div>
+            </div>
+            <div class="ref-sum">
+              <div class="amt">840 ₽</div>
+              <div class="status-mini muted" style="color:#6b7785;font-size:10px;">накопл.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="phone-label">Скоро в списке</div>
+        <div class="m-card">
+          <div class="ref-item">
+            <div class="ref-avatar" style="background:#fef3d7;color:#8a6500;">?</div>
+            <div class="ref-info">
+              <div class="ref-name">Гость — ссылка открыта</div>
+              <div class="ref-meta">3 дня назад · ждём регистрацию</div>
+            </div>
+            <div class="ref-sum">
+              <span class="tag tag-pending">клик</span>
+            </div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-avatar" style="background:#e6effa;color:#1e3a5f;">Д</div>
+            <div class="ref-info">
+              <div class="ref-name">Д***ий П.</div>
+              <div class="ref-meta">Зарегистрирован · ждём статус СМЗ</div>
+            </div>
+            <div class="ref-sum">
+              <span class="tag tag-pending">регистр.</span>
+            </div>
+          </div>
+          <div class="ref-item">
+            <div class="ref-avatar" style="background:#fef3d7;color:#8a6500;">И</div>
+            <div class="ref-info">
+              <div class="ref-name">И***ан З.</div>
+              <div class="ref-meta">СМЗ получен · ждём 1-ю смену</div>
+            </div>
+            <div class="ref-sum">
+              <span class="tag tag-frozen">100 ₽</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:10px;font-size:11px;color:#6b7785;">
+          Имена скрыты до 1-й подтверждённой смены друга
+        </div>
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab"><span class="icon">🏠</span>Главная</div>
+        <div class="tab active"><span class="icon">👥</span>Друзья</div>
+        <div class="tab"><span class="icon">📋</span>Задания</div>
+        <div class="tab"><span class="icon">📍</span>Карта</div>
+        <div class="tab"><span class="icon">👤</span>Профиль</div>
+      </div>
+    </div>
+
+    <!-- Экран 3: История начислений -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phone-status">
+        <span>13:48</span>
+        <span>• • •  📶  🔋</span>
+      </div>
+      <div class="phone-header">
+        <h2>← Начисления и выплаты</h2>
+        <span style="font-size:18px;">🔍</span>
+      </div>
+      <div class="phone-body">
+        <div class="phone-title-screen">Экран 3 · История начислений</div>
+
+        <!-- сводка -->
+        <div class="m-card" style="background:linear-gradient(135deg,#f5f8fb 0%,#e8edf3 100%);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div style="font-size:11px;color:#6b7785;">Доступно к выплате</div>
+              <div style="font-size:24px;font-weight:700;color:#1a2733;">3 480 ₽</div>
+            </div>
+            <button class="btn-primary" style="padding:10px 18px;">Вывести</button>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:14px;padding-top:14px;border-top:1px solid #d4dae3;font-size:11px;color:#6b7785;">
+            <div>В заморозке: <b style="color:#8a6500;">2 100 ₽</b></div>
+            <div>Выплачено всего: <b style="color:#1a2733;">6 900 ₽</b></div>
+          </div>
+        </div>
+
+        <div class="seg-tabs">
+          <button class="active">Все</button>
+          <button>В заморозке</button>
+          <button>Выплачено</button>
+          <button>Отменено</button>
+        </div>
+
+        <div class="phone-label">Сегодня</div>
+        <div class="m-card">
+          <div class="tx-item">
+            <div class="tx-icon income">+</div>
+            <div class="tx-body">
+              <div class="tx-title">Revenue share · смена № 15</div>
+              <div class="tx-sub">М***ил К. · <span class="tag tag-frozen">заморожено до 27.05</span></div>
+            </div>
+            <div class="tx-amount muted">+30 ₽</div>
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon income">+</div>
+            <div class="tx-body">
+              <div class="tx-title">Revenue share · смена № 8</div>
+              <div class="tx-sub">А***ей Н. · <span class="tag tag-frozen">заморожено до 27.05</span></div>
+            </div>
+            <div class="tx-amount muted">+60 ₽</div>
+          </div>
+        </div>
+
+        <div class="phone-label">10 мая</div>
+        <div class="m-card">
+          <div class="tx-item">
+            <div class="tx-icon income">🎯</div>
+            <div class="tx-body">
+              <div class="tx-title">Milestone · 10-я смена друга</div>
+              <div class="tx-sub">А***ей Н. · <span class="tag tag-paid">выплачено</span></div>
+            </div>
+            <div class="tx-amount plus">+2 500 ₽</div>
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon income">+</div>
+            <div class="tx-body">
+              <div class="tx-title">Revenue share · смена № 10</div>
+              <div class="tx-sub">А***ей Н. · <span class="tag tag-paid">выплачено</span></div>
+            </div>
+            <div class="tx-amount plus">+60 ₽</div>
+          </div>
+        </div>
+
+        <div class="phone-label">5 мая</div>
+        <div class="m-card">
+          <div class="tx-item">
+            <div class="tx-icon cancel">↺</div>
+            <div class="tx-body">
+              <div class="tx-title">Отмена · возврат заказчика</div>
+              <div class="tx-sub">С***ей В. · смена № 3 отменена → clawback</div>
+            </div>
+            <div class="tx-amount minus">−60 ₽</div>
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon income">🎯</div>
+            <div class="tx-body">
+              <div class="tx-title">Milestone · 1-я смена</div>
+              <div class="tx-sub">С***ей В. · <span class="tag tag-paid">выплачено</span></div>
+            </div>
+            <div class="tx-amount plus">+500 ₽</div>
+          </div>
+        </div>
+
+        <div class="phone-label">28 апреля</div>
+        <div class="m-card">
+          <div class="tx-item">
+            <div class="tx-icon income">💳</div>
+            <div class="tx-body">
+              <div class="tx-title">Выплата на СБП</div>
+              <div class="tx-sub">+7 (***) ***-91-55 · 14:22</div>
+            </div>
+            <div class="tx-amount plus">+4 320 ₽</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:14px 0;">
+          <button class="btn-secondary" style="background:transparent;border:1px solid #d4dae3;width:100%;padding:12px;">
+            🛡 Не согласен с расчётом
+          </button>
+        </div>
+
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab"><span class="icon">🏠</span>Главная</div>
+        <div class="tab active"><span class="icon">👥</span>Друзья</div>
+        <div class="tab"><span class="icon">📋</span>Задания</div>
+        <div class="tab"><span class="icon">📍</span>Карта</div>
+        <div class="tab"><span class="icon">👤</span>Профиль</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== CRM ========== -->
+<div class="stage" id="surface-crm" style="display:none;">
+  <div class="crm-frame">
+    <!-- сайдбар -->
+    <div class="crm-sidebar">
+      <div class="logo">РР</div>
+      <div class="nav-icon">📋</div>
+      <div class="nav-icon">✓</div>
+      <div class="nav-icon">👥</div>
+      <div class="nav-icon active">🎁</div>
+      <div class="nav-icon">⚠️</div>
+      <div class="nav-icon">👷</div>
+      <div class="nav-icon">💼</div>
+      <div class="nav-icon">⚙️</div>
+      <div style="margin-top:auto;" class="nav-icon">↩</div>
+    </div>
+
+    <div class="crm-main">
+      <div class="crm-top">
+        <div class="title">Реферальная программа</div>
+        <div class="right">
+          <span>Чеков: 12 | Споров: 3</span>
+          <span class="bell">🔔<span class="dot">1502</span></span>
+        </div>
+      </div>
+
+      <div class="crm-tabs">
+        <button class="active" onclick="showCrm('dashboard')">Дашборд</button>
+        <button onclick="showCrm('relations')">Реф-связи</button>
+        <button onclick="showCrm('finance')">Финансы</button>
+      </div>
+
+      <div class="crm-content">
+
+        <!-- ===== ДАШБОРД ===== -->
+        <div class="crm-screen active" id="crm-dashboard">
+          <div class="alert-banner">
+            ⚠️ 3 связи в очереди антифрода (флаги F-09, F-13). <a href="#" style="color:#1e88e5;font-weight:600;">Разобрать →</a>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="label">CAC реф-канала</div>
+              <div class="value">1 870 ₽</div>
+              <div class="delta down">↓ 38 % к платному</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Активные A (30д)</div>
+              <div class="value">412</div>
+              <div class="delta up">↑ 18 % м/м</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Новые СМЗ из реф</div>
+              <div class="value">186</div>
+              <div class="delta up">↑ 22 % м/м</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Выплачено YTD</div>
+              <div class="value">1.24 млн ₽</div>
+              <div class="delta" style="color:#6b7785;">из бюджета 3.0 млн</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">ROI канала</div>
+              <div class="value">2.6×</div>
+              <div class="delta up">+0.4 за квартал</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Воронка: клик → 10-я смена <span class="small-link">за последние 90 дней →</span></h3>
+            <div class="funnel">
+              <div class="funnel-step">
+                <div class="v">4 820</div>
+                <div class="l">Клики</div>
+              </div>
+              <div class="funnel-step">
+                <div class="conv">26 %</div>
+                <div class="v">1 254</div>
+                <div class="l">Регистрации</div>
+              </div>
+              <div class="funnel-step">
+                <div class="conv">61 %</div>
+                <div class="v">766</div>
+                <div class="l">СМЗ получен</div>
+              </div>
+              <div class="funnel-step">
+                <div class="conv">69 %</div>
+                <div class="v">528</div>
+                <div class="l">1-я смена</div>
+              </div>
+              <div class="funnel-step">
+                <div class="conv">52 %</div>
+                <div class="v">274</div>
+                <div class="l">5-я смена</div>
+              </div>
+              <div class="funnel-step">
+                <div class="conv">61 %</div>
+                <div class="v">167</div>
+                <div class="l">10-я смена</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="top-block">
+            <div class="panel">
+              <h3>Новые рефералы по дням <span class="small-link">90 дней →</span></h3>
+              <div class="chart-area">
+                <div class="chart-bars" id="chart-new-refs"></div>
+                <div class="chart-axis">
+                  <span>14 фев</span><span>14 мар</span><span>14 апр</span><span>13 мая</span>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Топ-10 приглашающих за 30 дней</h3>
+              <table class="data-table">
+                <tr><th>#</th><th>ID</th><th>Привёл</th><th>Заработал</th></tr>
+                <tr><td>1</td><td>#A-4821</td><td>12</td><td><b>34 200 ₽</b></td></tr>
+                <tr><td>2</td><td>#A-3309</td><td>9</td><td><b>27 800 ₽</b></td></tr>
+                <tr><td>3</td><td>#A-7712</td><td>8</td><td><b>22 100 ₽</b></td></tr>
+                <tr><td>4</td><td>#A-1124</td><td>7</td><td>19 500 ₽</td></tr>
+                <tr><td>5</td><td>#A-9933</td><td>6</td><td>17 200 ₽</td></tr>
+                <tr><td>6</td><td>#A-5562</td><td>5</td><td>14 800 ₽</td></tr>
+                <tr><td>7</td><td>#A-2287</td><td>5</td><td>13 900 ₽</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ТАБЛИЦА РЕФ-СВЯЗЕЙ ===== -->
+        <div class="crm-screen" id="crm-relations">
+          <div class="filter-row">
+            <div class="search-box">
+              <input type="text" placeholder="🔍 Поиск по ID, телефону, ИНН…" value="">
+            </div>
+            <button class="filter-pill has-value">Период: 90 дней <span class="x">×</span></button>
+            <button class="filter-pill">Город ▾</button>
+            <button class="filter-pill has-value">Статус: актив <span class="x">×</span></button>
+            <button class="filter-pill">Флаги антифрода ▾</button>
+            <button class="filter-pill">Диапазон сумм ▾</button>
+            <button class="filter-pill">Все фильтры ⚙</button>
+            <button class="btn-primary" style="margin-left:auto;">📥 Экспорт CSV</button>
+            <button class="btn-secondary">➕ Колонки</button>
+          </div>
+
+          <div class="panel" style="padding: 0; overflow: hidden;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox"></th>
+                  <th>Регистрация B ↓</th>
+                  <th>Город</th>
+                  <th>Приглашающий A</th>
+                  <th>B (исполнитель)</th>
+                  <th>Смен</th>
+                  <th>Выплачено A</th>
+                  <th>Статус</th>
+                  <th>Флаги</th>
+                  <th>Действие</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>13.05.2026 09:14</td>
+                  <td>СПб</td>
+                  <td>#A-4821 · Виктор М.</td>
+                  <td>#B-19024 · М***ил К.</td>
+                  <td>15</td>
+                  <td><b>3 760 ₽</b></td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>11.05.2026 16:42</td>
+                  <td>МСК</td>
+                  <td>#A-3309 · Сергей П.</td>
+                  <td>#B-19011 · А***ей Н.</td>
+                  <td>23</td>
+                  <td><b>4 140 ₽</b></td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr style="background:#fff8e1;">
+                  <td><input type="checkbox"></td>
+                  <td>10.05.2026 11:02</td>
+                  <td>СПб</td>
+                  <td>#A-7712 · Анна Д.</td>
+                  <td>#B-18988 · Василий К.</td>
+                  <td>1</td>
+                  <td>600 ₽</td>
+                  <td><span class="tag tag-pending">review</span></td>
+                  <td><span class="tag tag-cancelled">F-09</span></td>
+                  <td><span style="color:#a13030;cursor:pointer;font-weight:600;">Разобрать</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>09.05.2026 22:18</td>
+                  <td>МСК</td>
+                  <td>#A-4821 · Виктор М.</td>
+                  <td>#B-18976 · С***ей В.</td>
+                  <td>4</td>
+                  <td>840 ₽</td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>07.05.2026 14:30</td>
+                  <td>Каз</td>
+                  <td>#A-5562 · Дмитрий О.</td>
+                  <td>#B-18901 · К***ан Ж.</td>
+                  <td>11</td>
+                  <td><b>3 700 ₽</b></td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>05.05.2026 10:55</td>
+                  <td>СПб</td>
+                  <td>#A-9933 · Олег К.</td>
+                  <td>#B-18877 · А***р Г.</td>
+                  <td>60</td>
+                  <td><b>4 870 ₽</b></td>
+                  <td><span class="tag tag-frozen">60 смен</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>03.05.2026 18:21</td>
+                  <td>МСК</td>
+                  <td>#A-1124 · Иван Р.</td>
+                  <td>#B-18802 · Р***т Ф.</td>
+                  <td>32</td>
+                  <td><b>4 620 ₽</b></td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr style="background:#fdecea;">
+                  <td><input type="checkbox"></td>
+                  <td>02.05.2026 13:08</td>
+                  <td>СПб</td>
+                  <td>#A-7712 · Анна Д.</td>
+                  <td>#B-18799 · Т***н Б.</td>
+                  <td>0</td>
+                  <td>—</td>
+                  <td><span class="tag tag-cancelled">фрод</span></td>
+                  <td><span class="tag tag-cancelled">F-13 + F-02</span></td>
+                  <td><span style="color:#a13030;cursor:pointer;">Заблок.</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>01.05.2026 09:44</td>
+                  <td>МСК</td>
+                  <td>#A-3309 · Сергей П.</td>
+                  <td>#B-18741 · И***н З.</td>
+                  <td>3</td>
+                  <td>820 ₽</td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>28.04.2026 15:11</td>
+                  <td>Кр-р</td>
+                  <td>#A-2287 · Юлия М.</td>
+                  <td>#B-18689 · П***р А.</td>
+                  <td>8</td>
+                  <td>1 940 ₽</td>
+                  <td><span class="tag tag-active">актив</span></td>
+                  <td>—</td>
+                  <td><span style="color:#1e88e5;cursor:pointer;">Открыть</span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#6b7785;">
+              <div>Показано 1–10 из 1 254</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                Строк: <select style="border:1px solid #d4dae3;border-radius:4px;padding:2px 6px;"><option>10</option><option>25</option><option>50</option></select>
+                <button class="btn-secondary" style="padding: 4px 10px;">‹</button>
+                <button class="btn-secondary" style="padding: 4px 10px;background:#1e88e5;color:white;border-color:#1e88e5;">1</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">2</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">3</button>
+                <span>…</span>
+                <button class="btn-secondary" style="padding: 4px 10px;">126</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ФИНАНСЫ ===== -->
+        <div class="crm-screen" id="crm-finance">
+          <div class="kpi-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="kpi-card">
+              <div class="label">Выплачено за май</div>
+              <div class="value">186 400 ₽</div>
+              <div class="delta" style="color:#6b7785;">с 1 по 13 мая</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">В заморозке сейчас</div>
+              <div class="value">62 800 ₽</div>
+              <div class="delta" style="color:#6b7785;">размораж. в след. 14 дн.</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Прогноз обязательств 90д</div>
+              <div class="value">~485 000 ₽</div>
+              <div class="delta" style="color:#6b7785;">milestone + RS активных B</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Бюджет Q2</div>
+              <div class="value">412 / 750 K</div>
+              <div class="delta up">55 % израсходовано</div>
+            </div>
+          </div>
+
+          <div class="fin-grid">
+            <div class="panel">
+              <h3>Расходы по месяцам · разбивка по типу <span class="small-link">2026 год →</span></h3>
+              <div class="stacked-bars" id="stacked-fin"></div>
+              <div class="month-axis">
+                <div>Янв</div><div>Фев</div><div>Мар</div><div>Апр</div><div>Май*</div>
+              </div>
+              <div class="legend">
+                <div class="item"><div class="sw" style="background:#1e88e5;"></div>Milestone (фикс)</div>
+                <div class="item"><div class="sw" style="background:#6db4ee;"></div>Revenue share</div>
+                <div class="item"><div class="sw" style="background:#b8d8f5;"></div>Бонусы B</div>
+              </div>
+              <div style="font-size:11px;color:#6b7785;margin-top:8px;">* май — данные на 13.05 (неполный месяц)</div>
+            </div>
+
+            <div class="panel">
+              <h3>Прогноз обязательств</h3>
+              <div class="forecast-row">
+                <span class="lbl">Через 30 дней</span>
+                <span class="val">~142 000 ₽</span>
+              </div>
+              <div class="forecast-row">
+                <span class="lbl">Через 60 дней</span>
+                <span class="val">~298 000 ₽</span>
+              </div>
+              <div class="forecast-row">
+                <span class="lbl">Через 90 дней</span>
+                <span class="val">~485 000 ₽</span>
+              </div>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;">
+                <h3 style="margin-bottom:10px;">Cap-защита</h3>
+                <div class="forecast-row">
+                  <span class="lbl">A на месячном лимите</span>
+                  <span class="val">2 чел.</span>
+                </div>
+                <div class="forecast-row">
+                  <span class="lbl">B достигли cap 8 000 ₽</span>
+                  <span class="val">14 чел.</span>
+                </div>
+                <div class="forecast-row">
+                  <span class="lbl">Закрыто по 60 сменам</span>
+                  <span class="val">23 чел.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Реестр выплат (последние 50) <span class="small-link">📥 Выгрузка для бухгалтерии →</span></h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Дата</th>
+                  <th>Получатель</th>
+                  <th>Роль</th>
+                  <th>Основание</th>
+                  <th>Способ</th>
+                  <th>Сумма</th>
+                  <th>Статус</th>
+                  <th>НПД-чек</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>13.05.2026 11:02</td>
+                  <td>#A-4821 · Виктор М.</td>
+                  <td>Приглашающий</td>
+                  <td>Milestone (10-я смена B-19011)</td>
+                  <td>СБП</td>
+                  <td><b>2 500 ₽</b></td>
+                  <td><span class="tag tag-paid">выплачено</span></td>
+                  <td>📄 №14820</td>
+                </tr>
+                <tr>
+                  <td>13.05.2026 11:02</td>
+                  <td>#B-19011 · А***ей Н.</td>
+                  <td>Приглашённый</td>
+                  <td>Бонус новичка 5-я смена</td>
+                  <td>СБП</td>
+                  <td>1 000 ₽</td>
+                  <td><span class="tag tag-paid">выплачено</span></td>
+                  <td>📄 №14821</td>
+                </tr>
+                <tr>
+                  <td>13.05.2026 09:44</td>
+                  <td>#A-3309 · Сергей П.</td>
+                  <td>Приглашающий</td>
+                  <td>RS · смена № 8 (B-18741)</td>
+                  <td>СБП</td>
+                  <td>60 ₽</td>
+                  <td><span class="tag tag-paid">выплачено</span></td>
+                  <td>📄 №14819</td>
+                </tr>
+                <tr>
+                  <td>12.05.2026 18:12</td>
+                  <td>#A-7712 · Анна Д.</td>
+                  <td>Приглашающий</td>
+                  <td>Clawback · смена № 3 (B-18976)</td>
+                  <td>—</td>
+                  <td><span style="color:#a13030;">−60 ₽</span></td>
+                  <td><span class="tag tag-cancelled">clawback</span></td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>12.05.2026 14:00</td>
+                  <td>#A-1124 · Иван Р.</td>
+                  <td>Приглашающий</td>
+                  <td>Milestone (СМЗ B-18802)</td>
+                  <td>ИП-счёт</td>
+                  <td>100 ₽</td>
+                  <td><span class="tag tag-paid">выплачено</span></td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>11.05.2026 22:30</td>
+                  <td>#A-5562 · Дмитрий О.</td>
+                  <td>Приглашающий</td>
+                  <td>RS · смена № 11 (B-18901)</td>
+                  <td>СБП</td>
+                  <td>30 ₽</td>
+                  <td><span class="tag tag-frozen">заморож.</span></td>
+                  <td>—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-note">
+    <b>Подсказка для согласования:</b> макеты — статика на реальных формулах из ТЗ v1 (раздел 2 и 4). Числа в виджетах — иллюстративные, под реалистичный сценарий (3 активных реферала, ~12 смен у каждого). Перед разработкой нужно подтвердить с финансами реальную чистую комиссию (раздел 12, пункты 2–3) и согласовать ставки с Никитой Икрамовым и Ириной Зараевой (пункт 7).
+  </div>
+</div>
+
+<script>
+  function showSurface(name) {
+    document.getElementById('surface-mobile').style.display = name === 'mobile' ? 'flex' : 'none';
+    document.getElementById('surface-crm').style.display   = name === 'crm'    ? 'flex' : 'none';
+    document.querySelectorAll('.surface-tabs button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+  function showCrm(name) {
+    document.querySelectorAll('.crm-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('crm-' + name).classList.add('active');
+    document.querySelectorAll('.crm-tabs button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+
+  // генерация графика новых рефералов
+  (function() {
+    const wrap = document.getElementById('chart-new-refs');
+    if (!wrap) return;
+    // имитация роста с шумом
+    const days = 90;
+    let v = 8;
+    for (let i = 0; i < days; i++) {
+      v += (Math.random() - 0.4) * 3;
+      v = Math.max(2, Math.min(v, 35));
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = (v * 4) + 'px';
+      bar.dataset.v = Math.round(v) + ' рефералов';
+      wrap.appendChild(bar);
+    }
+  })();
+
+  // генерация stacked bars финансов
+  (function() {
+    const wrap = document.getElementById('stacked-fin');
+    if (!wrap) return;
+    const months = [
+      {ms: 80, rs: 40, b: 35},
+      {ms: 95, rs: 55, b: 42},
+      {ms: 120, rs: 78, b: 50},
+      {ms: 145, rs: 102, b: 58},
+      {ms: 86, rs: 64, b: 36}  // май неполный
+    ];
+    months.forEach(m => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      const segMs = document.createElement('div');
+      segMs.className = 'seg-ms'; segMs.style.height = m.ms + 'px';
+      const segRs = document.createElement('div');
+      segRs.className = 'seg-rs'; segRs.style.height = m.rs + 'px';
+      const segB = document.createElement('div');
+      segB.className = 'seg-bonus'; segB.style.height = m.b + 'px';
+      col.appendChild(segB);
+      col.appendChild(segRs);
+      col.appendChild(segMs);
+      wrap.appendChild(col);
+    });
+  })();
+</script>
+</body>
+</html>

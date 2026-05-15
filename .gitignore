@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Temp / lock
+~$*
+*.tmp
+*.bak
+*.log
+
+# Node / web (на будущее, когда появится сборка)
+node_modules/
+dist/
+build/
+.env
+.env.local
