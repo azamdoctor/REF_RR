@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Реферальная программа РР — прототипы v3</title>
+<title>Реферальная программа РР — прототипы v4</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -37,6 +37,42 @@
   .surface-tabs button.active { background: white; color: #1e3a5f; font-weight: 600; }
 
   .stage { padding: 30px; display: flex; justify-content: center; }
+
+  /* строки настроек (label слева, control + suffix справа) */
+  .setting-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 0; border-bottom: 1px solid #eef0f3;
+    font-size: 13px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row .setting-label {
+    width: 220px; flex-shrink: 0; color: #6b7785;
+  }
+  .setting-row .setting-control {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .setting-row .setting-control input[type="number"],
+  .setting-row .setting-control input[type="text"] {
+    width: 120px; padding: 8px 10px;
+    border: 1px solid #d4dae3; border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+  }
+  .setting-row .setting-control select {
+    padding: 8px 10px; border: 1px solid #d4dae3;
+    border-radius: 6px; font-size: 13px; background: white;
+    min-width: 280px;
+  }
+  .setting-row .setting-control .formula {
+    flex: 1; min-width: 0;
+    background: #f0f3f7; padding: 10px 12px; border-radius: 6px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; color: #1a2733;
+    word-break: break-word;
+  }
+  .setting-suffix {
+    font-size: 12px; color: #6b7785; line-height: 1.4;
+  }
 
   /* эксперимент-строки в Настройках */
   .exp-row {
@@ -1658,9 +1694,9 @@
               <div class="delta up">↑ 22 % м/м</div>
             </div>
             <div class="kpi-card">
-              <div class="label">ROI канала <span class="info-icon" onclick="openCrmModal('roi')">i</span></div>
-              <div class="value">2.6×</div>
-              <div class="delta up">+0.4 за квартал</div>
+              <div class="label">ROAS реф-канала <span class="info-icon" onclick="openCrmModal('roi')">i</span></div>
+              <div class="value">260%</div>
+              <div class="delta up">+40 п.п. за квартал</div>
             </div>
           </div>
 
@@ -1822,9 +1858,9 @@
               <div class="delta" style="color:#6b7785;">средняя по реф-каналу</div>
             </div>
             <div class="kpi-card">
-              <div class="label">Топ приглашающий по ROI</div>
+              <div class="label">Топ приглашающий по ROAS</div>
               <div class="value" style="font-size:14px;line-height:1.4;">Виктор М.<br/>#A-4821</div>
-              <div class="delta" style="color:#2c7a4a;">ROI 3.1× · 7 смен по ссылке</div>
+              <div class="delta" style="color:#2c7a4a;">ROAS 310% · 7 смен по ссылке</div>
             </div>
           </div>
 
@@ -1845,7 +1881,7 @@
                   <th>→ 1 смена</th>
                   <th>Конв. в 1 смену</th>
                   <th>Выплачено A</th>
-                  <th>ROI</th>
+                  <th>ROAS</th>
                   <th>Создана</th>
                   <th></th>
                 </tr>
@@ -1861,7 +1897,7 @@
                   <td>7</td>
                   <td><b style="color:#2c7a4a;">14.9%</b></td>
                   <td>14 320 ₽</td>
-                  <td><b style="color:#2c7a4a;">3.1×</b></td>
+                  <td><b style="color:#2c7a4a;">310%</b></td>
                   <td style="font-size:11px;color:#6b7785;">12.03.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1875,7 +1911,7 @@
                   <td>5</td>
                   <td><b style="color:#2c7a4a;">13.2%</b></td>
                   <td>11 200 ₽</td>
-                  <td><b style="color:#2c7a4a;">2.9×</b></td>
+                  <td><b style="color:#2c7a4a;">290%</b></td>
                   <td style="font-size:11px;color:#6b7785;">04.02.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1889,7 +1925,7 @@
                   <td>4</td>
                   <td><b style="color:#2c7a4a;">13.8%</b></td>
                   <td>9 800 ₽</td>
-                  <td><b style="color:#2c7a4a;">2.7×</b></td>
+                  <td><b style="color:#2c7a4a;">270%</b></td>
                   <td style="font-size:11px;color:#6b7785;">19.01.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1903,7 +1939,7 @@
                   <td>3</td>
                   <td><b style="color:#2c7a4a;">13.6%</b></td>
                   <td>7 200 ₽</td>
-                  <td><b style="color:#2c7a4a;">2.4×</b></td>
+                  <td><b style="color:#2c7a4a;">240%</b></td>
                   <td style="font-size:11px;color:#6b7785;">28.02.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1917,7 +1953,7 @@
                   <td>2</td>
                   <td><b style="color:#2c7a4a;">11.1%</b></td>
                   <td>4 800 ₽</td>
-                  <td><b style="color:#2c7a4a;">1.8×</b></td>
+                  <td><b style="color:#2c7a4a;">180%</b></td>
                   <td style="font-size:11px;color:#6b7785;">10.03.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1931,7 +1967,7 @@
                   <td>2</td>
                   <td><b style="color:#2c7a4a;">13.3%</b></td>
                   <td>3 900 ₽</td>
-                  <td><b style="color:#2c7a4a;">1.6×</b></td>
+                  <td><b style="color:#2c7a4a;">160%</b></td>
                   <td style="font-size:11px;color:#6b7785;">25.03.2026</td>
                   <td><span style="color:#1e88e5;cursor:pointer;font-size:12px;">Открыть</span></td>
                 </tr>
@@ -1969,10 +2005,11 @@
           <div class="info-banner" style="margin-top:16px;background:#e8f1fb;border:1px solid #c5dcf2;border-radius:10px;padding:12px;font-size:12px;color:#1e3a5f;display:flex;gap:10px;align-items:flex-start;">
             <span class="ic" style="font-size:16px;">💡</span>
             <div>
-              <b>Как считается ROI.</b>
-              ROI&nbsp;=&nbsp;маржа&nbsp;платформы&nbsp;от&nbsp;смен&nbsp;рефералов&nbsp;÷&nbsp;выплаты&nbsp;приглашающему&nbsp;по&nbsp;этой&nbsp;ссылке.
-              Например, ROI&nbsp;3.1× — на каждый рубль, выплаченный приглашающему, платформа получила 3.1&nbsp;₽ маржи со смен его рефералов.
-              Знаменатель (выплаты) учитывает все milestone'ы&nbsp;+&nbsp;revenue&nbsp;share по ссылке; числитель (маржа) — комиссия платформы с подтверждённых смен рефералов за горизонт начислений.
+              <b>Как считается ROAS.</b>
+              ROAS&nbsp;=&nbsp;(доход&nbsp;от&nbsp;рефералов&nbsp;÷&nbsp;расходы&nbsp;на&nbsp;выплаты&nbsp;приглашающему)&nbsp;×&nbsp;100%.
+              Пример (как в финансовом справочнике): потратили 10 000 ₽ на выплаты, получили 50 000 ₽ выручки со смен рефералов → ROAS&nbsp;=&nbsp;50 000 / 10 000 × 100% = 500%.
+              В нашем случае: ROAS&nbsp;310% у Виктора М. = на каждый ₽, выплаченный ему, платформа получила 3.10&nbsp;₽ выручки со смен его рефералов.
+              Знаменатель (расходы) — все milestone-выплаты по ссылке; числитель (доход) — комиссия платформы с подтверждённых смен рефералов за горизонт начислений (60 смен реферала).
               <br/><br/>
               <b>Где задаётся формула.</b>
               В админ-панели маркетолога: «Настройки реф-программы → Расчётные коэффициенты» (формула, горизонт, исключения по фрод-флагам). Сейчас в прототипе зашит дефолт — финальные значения подтянутся после согласования unit-экономики.
@@ -2085,26 +2122,49 @@
 
           <div class="panel">
             <h3>Расчётные коэффициенты</h3>
-            <div style="display:grid;grid-template-columns:240px 1fr;gap:14px 16px;font-size:13px;align-items:center;">
-              <label style="color:#6b7785;">Формула ROI</label>
-              <div style="background:#f0f3f7;padding:10px 12px;border-radius:6px;font-family:monospace;font-size:12px;color:#1a2733;">ROI = margin_from_referral_shifts ÷ payouts_to_inviter</div>
 
-              <label style="color:#6b7785;">Горизонт начислений</label>
-              <input type="number" value="60" style="padding:8px 10px;border:1px solid #d4dae3;border-radius:6px;width:120px;font-size:13px;"> <span style="color:#6b7785;font-size:12px;margin-left:-280px;padding-left:140px;">смен реферала, после — программа закрывается</span>
-
-              <label style="color:#6b7785;">Заморозка начисления</label>
-              <input type="number" value="14" style="padding:8px 10px;border:1px solid #d4dae3;border-radius:6px;width:120px;font-size:13px;"> <span style="color:#6b7785;font-size:12px;margin-left:-280px;padding-left:140px;">дней (защита от отмены смены заказчиком)</span>
-
-              <label style="color:#6b7785;">Cap выплат / месяц</label>
-              <input type="number" value="80000" style="padding:8px 10px;border:1px solid #d4dae3;border-radius:6px;width:120px;font-size:13px;"> <span style="color:#6b7785;font-size:12px;margin-left:-280px;padding-left:140px;">₽ на одного приглашающего</span>
-
-              <label style="color:#6b7785;">Источник выплат</label>
-              <select style="padding:8px 10px;border:1px solid #d4dae3;border-radius:6px;font-size:13px;background:white;width:280px;">
-                <option>Платформа (из общего бюджета)</option>
-                <option>Маржа с акционных клиентов</option>
-                <option>Маржа с любого клиента</option>
-              </select>
+            <div class="setting-row">
+              <div class="setting-label">Формула ROAS</div>
+              <div class="setting-control">
+                <div class="formula">ROAS = (revenue_from_referral_shifts / payouts_to_inviter) × 100%</div>
+              </div>
             </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Горизонт начислений</div>
+              <div class="setting-control">
+                <input type="number" value="60">
+                <span class="setting-suffix">смен реферала · после — программа закрывается</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Заморозка начисления</div>
+              <div class="setting-control">
+                <input type="number" value="14">
+                <span class="setting-suffix">дней · защита от отмены смены заказчиком</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Cap выплат / месяц</div>
+              <div class="setting-control">
+                <input type="number" value="80000">
+                <span class="setting-suffix">₽ на одного приглашающего</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Источник выплат</div>
+              <div class="setting-control">
+                <select>
+                  <option>Платформа (из общего бюджета)</option>
+                  <option>Маржа с акционных клиентов</option>
+                  <option>Маржа с любого клиента</option>
+                </select>
+              </div>
+            </div>
+
           </div>
 
           <div class="panel">
@@ -2191,20 +2251,40 @@
 
           <div class="panel">
             <h3>Антифрод-пороги</h3>
-            <div style="display:grid;grid-template-columns:240px 1fr;gap:12px 16px;font-size:13px;align-items:center;">
-              <label style="color:#6b7785;">Дельта клик → регистрация (F-07)</label>
-              <div><input type="number" value="10" style="width:80px;padding:6px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> сек · меньше — FLAG</div>
 
-              <label style="color:#6b7785;">Cap начислений / месяц (F-12)</label>
-              <div><input type="number" value="80000" style="width:100px;padding:6px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> ₽ · сверх — pending review</div>
-
-              <label style="color:#6b7785;">Рефералов / неделю (F-13)</label>
-              <div><input type="number" value="10" style="width:80px;padding:6px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> · сверх + нет дошедших до 5 смен — FLAG партии</div>
-
-              <label style="color:#6b7785;">Расстояние A↔B (F-08)</label>
-              <div><input type="number" value="1500" style="width:80px;padding:6px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> км · больше за 30д без пересечения — FLAG</div>
+            <div class="setting-row">
+              <div class="setting-label">Дельта «клик → регистрация» (F-07)</div>
+              <div class="setting-control">
+                <input type="number" value="10">
+                <span class="setting-suffix">сек · меньше — FLAG (вероятный бот)</span>
+              </div>
             </div>
-            <div style="font-size:11px;color:#6b7785;margin-top:12px;">
+
+            <div class="setting-row">
+              <div class="setting-label">Cap начислений / месяц (F-12)</div>
+              <div class="setting-control">
+                <input type="number" value="80000">
+                <span class="setting-suffix">₽ на исполнителя · сверх — pending review</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Рефералов / неделю (F-13)</div>
+              <div class="setting-control">
+                <input type="number" value="10">
+                <span class="setting-suffix">· сверх + нет дошедших до 5 смен — FLAG партии</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Расстояние A ↔ B (F-08)</div>
+              <div class="setting-control">
+                <input type="number" value="1500">
+                <span class="setting-suffix">км · больше за 30д без пересечения — FLAG</span>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:#6b7785;margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;">
               Полный список флагов F-01…F-16 — в модалке антифрода на вкладке Дашборд.
             </div>
           </div>
@@ -2216,7 +2296,7 @@
   </div>
 
   <div class="stage-note">
-    <b>Что обновилось в v2:</b> в мобилке добавлен вход через профиль («Реферальная программа»), share-кнопка вместо иконок мессенджеров, описание схемы — под кнопкой «i», список рефералов — только зарегистрированные с короткой строкой (смены + сумма), выплаты переведены в авто-режим 5-го и 20-го числа, «Не согласен» заменён на «Задать вопрос» (упадёт маркетологу). В CRM убрана подпись Bitrix24, фикс overflow графика, расширен сам кабинет до 1600 px, добавлен селектор периода с пресетами и ручным вводом дат на всех вкладках, убран KPI «Бюджет», добавлены «i»-модалки для прогноза обязательств, CAC, ROI, воронки и полного списка флагов антифрода F-01…F-16.
+    <b>v4 (15.05.2026):</b> метрика ROI заменена на ROAS = (доход со смен рефералов / расходы на выплаты) × 100% — формула из финансового справочника. Все значения в таблице ссылок, KPI и модалках пересчитаны в проценты (310% вместо 3.1× и т.п.). Раздел «⚙ Настройки» в CRM переверстан с чистым flex-layout (label слева, input + suffix-подсказка в одной строке справа). Версионирование прототипов теперь обязательное — каждая существенная итерация = новый файл.
   </div>
 </div>
 
@@ -2246,16 +2326,18 @@
 <div class="crm-modal-overlay" id="crm-modal-roi">
   <div class="crm-modal">
     <div class="crm-modal-head">
-      <h3>Как считается ROI канала</h3>
+      <h3>Как считается ROAS реф-канала</h3>
       <button class="crm-modal-close" onclick="closeCrmModal('roi')">×</button>
     </div>
     <div class="crm-modal-body">
       <h4>Формула</h4>
-      <div class="formula-box">ROI = (Σ чистая комиссия со смен B − Σ выплат A+B) / Σ выплат A+B</div>
+      <div class="formula-box">ROAS = (Σ доход со смен B / Σ выплат A+B) × 100%</div>
+      <h4>Пример из финансового справочника</h4>
+      <p>Потратили 10 000 ₽ на рекламу, получили 50 000 ₽ выручки → ROAS = (50 000 / 10 000) × 100% = 500%. У нас «реклама» — это выплаты приглашающим и бонусы новичкам, «выручка» — комиссия платформы со смен приведённых B.</p>
       <h4>Что считается</h4>
-      <p>Для каждой подтверждённой смены приведённого B берём <b>чистую комиссию платформы</b> (после выплаты исполнителю, налогов, эквайринга). Суммируем за период. Вычитаем все реф-выплаты A и B за тот же период. Делим на сумму выплат.</p>
-      <h4>Текущее значение 2.6×</h4>
-      <p>На каждый 1 ₽, выплаченный по программе, платформа получает 2.6 ₽ чистой комиссии со смен приведённых B. Целевое значение ≥ 1.5× для окупаемости с учётом opex.</p>
+      <p>Для каждой подтверждённой смены приведённого B берём <b>комиссию платформы</b> (выручку платформы с этой смены — до вычета opex). Суммируем за период. Делим на сумму реф-выплат A и B за тот же период. Умножаем на 100%.</p>
+      <h4>Текущее значение 260%</h4>
+      <p>На каждый 1 ₽, выплаченный по программе, платформа получает 2.6 ₽ выручки со смен приведённых B. Целевое значение ≥ 150% для окупаемости с учётом opex; «отлично» — от 300%.</p>
     </div>
   </div>
 </div>
