@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Реферальная программа РР — прототипы v5</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #eef1f5;
+    color: #1a2733;
+    min-height: 100vh;
+  }
+  .top-nav {
+    background: #1e3a5f;
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .top-nav h1 { font-size: 16px; font-weight: 600; }
+  .top-nav .badge { background: rgba(255,255,255,0.18); padding: 3px 10px; border-radius: 12px; font-size: 11px; }
+  .top-nav .spacer { flex: 1; }
+  .surface-tabs { display: flex; gap: 6px; }
+  .surface-tabs button {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-size: 13px;
+    transition: all 0.15s;
+  }
+  .surface-tabs button:hover { background: rgba(255,255,255,0.2); }
+  .surface-tabs button.active { background: white; color: #1e3a5f; font-weight: 600; }
+
+  .stage { padding: 30px; display: flex; justify-content: center; }
+
+  /* строки настроек (label слева, control + suffix справа) */
+  .setting-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 12px 0; border-bottom: 1px solid #eef0f3;
+    font-size: 13px;
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-row .setting-label {
+    width: 220px; flex-shrink: 0; color: #6b7785;
+  }
+  .setting-row .setting-control {
+    flex: 1; display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .setting-row .setting-control input[type="number"],
+  .setting-row .setting-control input[type="text"],
+  .setting-row .setting-control input[type="email"],
+  .setting-row .setting-control input[type="tel"] {
+    width: 240px; padding: 8px 10px;
+    border: 1px solid #d4dae3; border-radius: 6px;
+    font-size: 13px; font-family: inherit;
+  }
+  .setting-row .setting-control select {
+    padding: 8px 10px; border: 1px solid #d4dae3;
+    border-radius: 6px; font-size: 13px; background: white;
+    min-width: 280px;
+  }
+  .setting-row .setting-control .formula {
+    flex: 1; min-width: 0;
+    background: #f0f3f7; padding: 10px 12px; border-radius: 6px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px; color: #1a2733;
+    word-break: break-word;
+  }
+  .setting-suffix {
+    font-size: 12px; color: #6b7785; line-height: 1.4;
+  }
+  .roles-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .roles-chips label {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid #d4dae3; padding: 6px 12px;
+    border-radius: 16px; font-size: 12px; cursor: pointer;
+  }
+  .roles-chips input[type="checkbox"]:checked + span { color: #1e88e5; font-weight: 600; }
+  .roles-chips label:has(input:checked) { background: #e8f1fb; border-color: #1e88e5; }
+
+  /* iOS-style switch */
+  .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #d4dae3; border-radius: 24px;
+    transition: 0.2s;
+  }
+  .switch .slider::before {
+    content: ''; position: absolute; height: 18px; width: 18px;
+    left: 3px; bottom: 3px; background: white; border-radius: 50%;
+    transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .switch input:checked + .slider { background: #1e88e5; }
+  .switch input:checked + .slider::before { transform: translateX(18px); }
+
+  /* контейнер surface-mobile теперь колонка */
+  #surface-mobile.stage { flex-direction: column; align-items: center; }
+  #surface-mobile .phone-wrap { width: 100%; }
+  #surface-crm.stage {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 24px;
+  }
+
+  /* МОБИЛКА */
+  .phone-wrap { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .phone {
+    width: 340px; height: 720px; background: #f6f7fa;
+    border-radius: 38px; border: 10px solid #1a2733;
+    overflow: hidden; position: relative;
+    box-shadow: 0 18px 42px rgba(0,0,0,0.18);
+    display: flex; flex-direction: column;
+  }
+  .phone .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 22px; background: #1a2733;
+    border-radius: 0 0 14px 14px; z-index: 5;
+  }
+  .phone-status {
+    padding: 8px 22px 4px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; font-weight: 600; color: #1a2733; margin-top: 10px;
+  }
+  .phone-header {
+    padding: 8px 16px 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e6e9ee; background: #f6f7fa;
+  }
+  .phone-header h2 { font-size: 17px; font-weight: 600; color: #1a2733; }
+  .phone-body { flex: 1; overflow-y: auto; padding: 14px; }
+  .phone-tabbar {
+    background: white; border-top: 1px solid #e6e9ee;
+    display: flex; padding: 8px 0 14px;
+  }
+  .phone-tabbar .tab { flex: 1; text-align: center; font-size: 10px; color: #9aa3ad; cursor: pointer; }
+  .phone-tabbar .tab.active { color: #1a2733; }
+  .phone-tabbar .icon { font-size: 18px; display: block; margin-bottom: 2px; }
+  .phone-title-screen { font-size: 11px; color: #6b7785; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600; }
+
+  .m-card {
+    background: white; border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .m-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #1a2733; }
+
+  /* профильный пункт меню */
+  .menu-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 4px;
+    border-bottom: 1px solid #eef0f3;
+    cursor: pointer;
+  }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: #e8edf3; color: #1e3a5f; font-size: 18px; flex-shrink: 0;
+  }
+  .menu-icon.accent { background: linear-gradient(135deg,#4a6fa5,#1e3a5f); color: white; }
+  .menu-text { flex: 1; }
+  .menu-title { font-size: 14px; color: #1a2733; font-weight: 500; }
+  .menu-sub { font-size: 11px; color: #6b7785; margin-top: 2px; }
+  .menu-chev { color: #c5cdd6; }
+  .menu-item.highlight {
+    background: linear-gradient(135deg, #fff8e7 0%, #fef3d7 100%);
+    border-radius: 10px;
+    padding: 14px 12px;
+    margin-bottom: 4px;
+    border-bottom: none;
+  }
+  .menu-item.highlight .menu-title { font-weight: 600; color: #8a6500; }
+  .menu-item.highlight .menu-icon { background: #f5a623; color: white; }
+  .menu-badge {
+    background: #e53935; color: white;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 10px;
+  }
+
+  /* реф-герой */
+  .ref-hero {
+    background: linear-gradient(135deg, #2a4a7a 0%, #1e3a5f 100%);
+    color: white; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+    position: relative;
+  }
+  .ref-hero .title { font-size: 16px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .ref-hero .info-btn {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-style: italic; font-weight: 700; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.4);
+    margin-left: auto;
+  }
+  .ref-hero .amount { font-size: 26px; font-weight: 700; margin: 10px 0 4px; }
+  .ref-hero .sub-small { font-size: 11px; opacity: 0.85; }
+  .ref-link-box {
+    background: rgba(255,255,255,0.15);
+    border: 1px dashed rgba(255,255,255,0.4);
+    padding: 10px 12px; border-radius: 8px;
+    font-size: 12px; font-family: monospace;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    margin: 12px 0 8px;
+  }
+  .copy-btn { background: white; color: #1e3a5f; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .share-single {
+    width: 100%; background: white; color: #1e3a5f;
+    border: none; padding: 12px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 4px;
+  }
+
+  .stat-row { display: flex; gap: 8px; margin: 12px 0 4px; }
+  .stat-cell {
+    flex: 1; background: #f0f3f7; border-radius: 10px; padding: 12px 8px; text-align: center;
+  }
+  .stat-cell .v { font-size: 20px; font-weight: 700; color: #1a2733; }
+  .stat-cell .l { font-size: 10px; color: #6b7785; margin-top: 4px; line-height: 1.3; }
+
+  /* кнопка "Задать вопрос" */
+  .ask-btn {
+    width: 100%; background: white; border: 1px solid #d4dae3;
+    padding: 14px; border-radius: 10px;
+    font-size: 14px; color: #1a2733; cursor: pointer; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .ask-btn:hover { background: #f6f8fb; }
+
+  /* список каналов связи в модалке "Задать вопрос" */
+  .contact-channel {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 12px;
+    background: #f6f8fb;
+    border: 1px solid #e6e9ee;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .contact-channel:hover { background: #e8f1fb; border-color: #1e88e5; }
+  .contact-channel .ch-ico {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    color: white;
+  }
+  .contact-channel .ch-ico.tg { background: #2aabee; }
+  .contact-channel .ch-ico.mx { background: #5b69e0; }
+  .contact-channel .ch-ico.em { background: #ea4335; }
+  .contact-channel .ch-ico.ph { background: #2c7a4a; }
+  .contact-channel .ch-body { flex: 1; }
+  .contact-channel .ch-title { font-size: 13px; font-weight: 600; color: #1a2733; }
+  .contact-channel .ch-value { font-size: 12px; color: #6b7785; margin-top: 2px; }
+  .contact-channel .ch-chev { color: #c5cdd6; font-size: 16px; }
+
+  /* модалка инструкции */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: flex-end;
+    z-index: 50;
+    border-radius: 28px;
+    overflow: hidden;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-sheet {
+    background: white; width: 100%;
+    border-radius: 20px 20px 0 0;
+    padding: 18px 16px 22px;
+    max-height: 90%; overflow-y: auto;
+  }
+  .modal-handle { width: 38px; height: 4px; background: #d4dae3; border-radius: 2px; margin: 0 auto 14px; }
+  .modal-sheet h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+  .modal-sheet .step {
+    display: flex; gap: 12px; margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .modal-sheet .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #1e3a5f; color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+  .modal-sheet .step-body { font-size: 13px; line-height: 1.5; }
+  .modal-sheet .step-body b { color: #2c7a4a; }
+  .modal-close {
+    width: 100%; background: #1e3a5f; color: white;
+    border: none; padding: 12px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px;
+  }
+
+  /* ---------- CRM ---------- */
+  .crm-frame {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    display: flex;
+    min-height: 800px;
+  }
+  .crm-sidebar {
+    width: 56px; background: #ffffff;
+    border-right: 1px solid #e6e9ee;
+    padding: 16px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 18px;
+    flex-shrink: 0;
+  }
+  .crm-sidebar .logo {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a6fa5, #2a4a7a);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; line-height: 1.1; text-align: center;
+    margin-bottom: 10px;
+  }
+  .crm-sidebar .nav-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #6b7785; font-size: 18px; cursor: pointer;
+  }
+  .crm-sidebar .nav-icon.active { background: #e8edf3; color: #1e3a5f; }
+  .crm-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .crm-top {
+    background: #1e88e5; padding: 14px 24px; color: white;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .crm-top .title { font-size: 16px; font-weight: 600; }
+  .crm-top .right { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 13px; }
+  .crm-top .bell { position: relative; }
+  .crm-top .bell .dot {
+    position: absolute; top: -4px; right: -4px;
+    background: #e53935; color: white; font-size: 10px; padding: 1px 5px;
+    border-radius: 8px; font-weight: 600;
+  }
+
+  .crm-tabs {
+    background: white; border-bottom: 1px solid #e6e9ee;
+    padding: 0 24px; display: flex; gap: 4px;
+  }
+  .crm-tabs button {
+    background: none; border: none; padding: 14px 18px;
+    font-size: 13px; cursor: pointer; color: #6b7785;
+    border-bottom: 2px solid transparent; font-weight: 500;
+  }
+  .crm-tabs button.active { color: #1e88e5; border-bottom-color: #1e88e5; font-weight: 600; }
+
+  .crm-content { padding: 24px; flex: 1; overflow-y: auto; background: #f6f8fb; }
+
+  /* период-селектор (теперь интерактивный) */
+  .period-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .period-row .lbl { font-size: 13px; color: #6b7785; }
+  .period-presets { display: flex; background: white; border: 1px solid #d4dae3; border-radius: 8px; overflow: hidden; }
+  .period-presets button {
+    background: transparent; border: none; padding: 7px 14px;
+    font-size: 12px; cursor: pointer; color: #6b7785; border-right: 1px solid #e6e9ee;
+    transition: all 0.15s;
+  }
+  .period-presets button:last-child { border-right: none; }
+  .period-presets button:hover { background: #f6f8fb; }
+  .period-presets button.active { background: #1e88e5; color: white; font-weight: 600; }
+  .date-input {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border: 1px solid #d4dae3; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px;
+  }
+  .date-input input {
+    border: none; outline: none; font-size: 12px;
+    font-family: inherit; width: 90px; color: #1a2733;
+  }
+  .date-input span { color: #9aa3ad; }
+  .apply-btn {
+    background: #1e88e5; color: white; border: none;
+    padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  /* KPI */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: white; border-radius: 10px; padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+  }
+  .kpi-card .label { font-size: 11px; color: #6b7785; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+  .kpi-card .value { font-size: 22px; font-weight: 700; color: #1a2733; margin-top: 6px; }
+  .kpi-card .delta { font-size: 11px; margin-top: 4px; }
+  .delta.up { color: #2c7a4a; }
+  .delta.down { color: #a13030; }
+
+  .info-icon {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #e8edf3; color: #6b7785;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-style: italic; font-weight: 700;
+    cursor: pointer; font-family: serif;
+    flex-shrink: 0;
+  }
+  .info-icon:hover { background: #1e88e5; color: white; }
+
+  .panel {
+    background: white; border-radius: 10px; padding: 18px;
+    margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .panel h3 {
+    font-size: 14px; font-weight: 600; margin-bottom: 14px; color: #1a2733;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  }
+  .panel h3 .left { display: flex; align-items: center; gap: 8px; }
+  .panel h3 .small-link { font-size: 12px; color: #1e88e5; font-weight: 500; cursor: pointer; }
+
+  /* Воронка */
+  .funnel { display: flex; gap: 2px; }
+  .funnel-step {
+    flex: 1; padding: 12px; background: #e8edf3; border-radius: 4px;
+    text-align: center; position: relative;
+  }
+  .funnel-step:nth-child(1) { background: #c5d4e8; }
+  .funnel-step:nth-child(2) { background: #b3c5dd; }
+  .funnel-step:nth-child(3) { background: #95afcd; }
+  .funnel-step:nth-child(4) { background: #7798bf; }
+  .funnel-step:nth-child(5) { background: #5a82b0; color: white; }
+  .funnel-step:nth-child(6) { background: #3d6ca2; color: white; }
+  .funnel-step .v { font-size: 18px; font-weight: 700; }
+  .funnel-step .l { font-size: 10px; margin-top: 2px; opacity: 0.85; line-height: 1.3; }
+  .funnel-step .conv {
+    position: absolute; top: -16px; right: -8px; background: white;
+    border: 1px solid #d4dae3; padding: 1px 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 600; color: #6b7785; z-index: 2;
+  }
+
+  .chart-area { height: 220px; position: relative; overflow: hidden; }
+  .chart-bars {
+    display: flex; align-items: flex-end; height: 180px;
+    gap: 3px; padding: 0 6px;
+    border-bottom: 1px solid #e6e9ee;
+    overflow: hidden;
+  }
+  .chart-bars .bar {
+    flex: 1; background: linear-gradient(180deg, #4a6fa5 0%, #1e88e5 100%);
+    border-radius: 3px 3px 0 0; position: relative; min-width: 0;
+  }
+  .chart-bars .bar:hover::after {
+    content: attr(data-v); position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    background: #1a2733; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    white-space: nowrap; z-index: 10;
+  }
+  .chart-axis { display: flex; justify-content: space-between; font-size: 10px; color: #9aa3ad; padding: 6px 6px 0; }
+
+  /* таблица */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th {
+    text-align: left; padding: 10px 8px; background: #f0f3f7;
+    color: #6b7785; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+    border-bottom: 1px solid #e6e9ee;
+  }
+  .data-table td { padding: 10px 8px; border-bottom: 1px solid #eef0f3; color: #1a2733; }
+  .data-table tr:hover td { background: #fafbfc; }
+  .filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-pill {
+    background: white; border: 1px solid #d4dae3;
+    padding: 8px 14px; border-radius: 20px; font-size: 12px; color: #6b7785;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .filter-pill.has-value { background: #e8f1fb; border-color: #1e88e5; color: #1e88e5; }
+  .filter-pill .x { color: #9aa3ad; font-size: 14px; }
+  .search-box { flex: 1; min-width: 200px; }
+  .search-box input { width: 100%; padding: 8px 14px; border: 1px solid #d4dae3; border-radius: 20px; font-size: 12px; }
+  .btn-primary {
+    background: #1e88e5; color: white; border: none;
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .btn-secondary {
+    background: white; color: #1a2733; border: 1px solid #d4dae3;
+    padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .btn-link { background: none; border: none; color: #1e88e5; cursor: pointer; font-size: 12px; padding: 0; font-family: inherit; }
+  .btn-link:hover { text-decoration: underline; }
+
+  /* финансы */
+  .stacked-bars {
+    display: flex; align-items: flex-end; justify-content: center;
+    height: 240px;
+    gap: 32px; padding: 8px;
+    border-bottom: 1px solid #e6e9ee;
+    overflow: hidden;
+  }
+  .stacked-bars .col {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    border-radius: 4px 4px 0 0; overflow: hidden;
+    width: 140px; flex-shrink: 0;
+  }
+  .month-axis {
+    display: flex; justify-content: center; gap: 32px;
+    padding: 6px 8px 0; font-size: 11px; color: #6b7785;
+  }
+  .month-axis div { width: 140px; text-align: center; flex-shrink: 0; }
+  .stacked-bars .seg-ms { background: #1e88e5; }
+  .stacked-bars .seg-rs { background: #6db4ee; }
+  .stacked-bars .seg-bonus { background: #b8d8f5; }
+  .legend { display: flex; gap: 16px; margin-top: 12px; }
+  .legend .item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7785; }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+
+  .forecast-row {
+    display: flex; justify-content: space-between; padding: 12px 0;
+    border-bottom: 1px solid #eef0f3;
+  }
+  .forecast-row:last-child { border-bottom: none; }
+  .forecast-row .lbl { font-size: 13px; color: #6b7785; }
+  .forecast-row .val { font-size: 14px; font-weight: 600; color: #1a2733; }
+
+  .crm-screen { display: none; }
+  .crm-screen.active { display: block; }
+
+  .top-block {
+    display: flex; gap: 16px; margin-bottom: 16px;
+  }
+  .top-block .panel { flex: 1; margin-bottom: 0; }
+
+  .alert-banner {
+    background: #fff8e1; border-left: 3px solid #f5a623;
+    padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #8a6500;
+    margin-bottom: 16px;
+  }
+
+  .stage-note {
+    width: 100%; margin: 20px 0 0; padding: 16px 20px;
+    background: white; border-radius: 8px; font-size: 12px; color: #6b7785; line-height: 1.6;
+    border: 1px dashed #d4dae3;
+  }
+  .stage-note b { color: #1a2733; }
+
+  /* теги */
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .tag-frozen { background: #fef3d7; color: #8a6500; }
+  .tag-paid { background: #e3f3ea; color: #2c7a4a; }
+  .tag-cancelled { background: #fbe4e4; color: #a13030; }
+  .tag-pending { background: #e8f1fb; color: #1e3a5f; }
+
+  /* ===== CRM-модалка ===== */
+  .crm-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26, 39, 51, 0.6);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 20px;
+  }
+  .crm-modal-overlay.show { display: flex; }
+  .crm-modal {
+    background: white; border-radius: 14px;
+    max-width: 760px; width: 100%; max-height: 90vh;
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+  }
+  .crm-modal-head {
+    padding: 18px 24px; border-bottom: 1px solid #eef0f3;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .crm-modal-head h3 { font-size: 16px; font-weight: 700; color: #1a2733; }
+  .crm-modal-close {
+    background: none; border: none; font-size: 22px; cursor: pointer; color: #9aa3ad;
+  }
+  .crm-modal-body { padding: 22px 24px; overflow-y: auto; font-size: 13px; line-height: 1.6; color: #1a2733; }
+  .crm-modal-body h4 { font-size: 13px; font-weight: 700; color: #1e3a5f; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .crm-modal-body h4:first-child { margin-top: 0; }
+  .crm-modal-body code {
+    background: #f0f3f7; padding: 2px 6px; border-radius: 4px;
+    font-family: "SF Mono", Menlo, monospace; font-size: 12px; color: #1e3a5f;
+  }
+  .crm-modal-body table { width: 100%; margin: 8px 0; border-collapse: collapse; font-size: 12px; }
+  .crm-modal-body table td { padding: 6px 8px; border-bottom: 1px solid #eef0f3; vertical-align: top; }
+  .crm-modal-body table td:first-child { color: #6b7785; width: 100px; font-weight: 600; }
+  .formula-box {
+    background: #f6f8fb; border-left: 3px solid #1e88e5;
+    padding: 10px 14px; border-radius: 4px; margin: 10px 0;
+    font-family: "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.6;
+    white-space: pre-wrap;
+  }
+
+  /* карточка реферера/реферала */
+  .ref-card-head {
+    display: flex; gap: 14px; align-items: center;
+    padding-bottom: 14px; border-bottom: 1px solid #eef0f3; margin-bottom: 14px;
+  }
+  .ref-card-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: linear-gradient(135deg,#4a6fa5,#1e3a5f);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 600; flex-shrink: 0;
+  }
+  .ref-card-info { flex: 1; }
+  .ref-card-name { font-size: 16px; font-weight: 700; color: #1a2733; }
+  .ref-card-meta { font-size: 12px; color: #6b7785; margin-top: 3px; line-height: 1.4; }
+  .ref-card-sum { text-align: right; }
+  .ref-card-sum .amt { font-size: 18px; font-weight: 700; color: #1e3a5f; }
+  .ref-card-sum .lbl { font-size: 11px; color: #6b7785; margin-top: 2px; }
+
+  .ms-grid { display: flex; flex-direction: column; gap: 0; }
+  .ms-grid .ms-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px dashed #eef0f3; }
+  .ms-grid .ms-row:last-child { border-bottom: none; }
+  .ms-tick {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0;
+  }
+  .ms-tick.done { background: #e3f3ea; color: #2c7a4a; }
+  .ms-tick.pending { background: #fef3d7; color: #8a6500; }
+  .ms-tick.locked { background: #eef0f3; color: #9aa3ad; }
+  .ms-body { flex: 1; font-size: 13px; color: #1a2733; }
+  .ms-body .ms-sub { font-size: 11px; color: #6b7785; margin-top: 2px; }
+  .ms-pay { font-size: 13px; font-weight: 700; min-width: 80px; text-align: right; }
+  .ms-pay.paid { color: #2c7a4a; }
+  .ms-pay.frozen { color: #8a6500; }
+  .ms-pay.locked { color: #9aa3ad; }
+
+  /* корректировки счётчика */
+  .adj-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 140px 100px;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #eef0f3;
+    font-size: 12px;
+    align-items: center;
+  }
+  .adj-row .when { color: #6b7785; }
+  .adj-row .who { color: #1e3a5f; font-weight: 600; }
+  .adj-row .delta-plus { color: #2c7a4a; font-weight: 700; }
+  .adj-row .delta-minus { color: #a13030; font-weight: 700; }
+  .adj-form {
+    background: #f6f8fb; border: 1px solid #d4dae3; border-radius: 8px;
+    padding: 14px; margin-top: 12px;
+  }
+  .adj-form .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+  .adj-form select, .adj-form input[type="text"] {
+    padding: 7px 10px; border: 1px solid #d4dae3; border-radius: 6px;
+    font-size: 12px; font-family: inherit;
+  }
+  .adj-form input[type="text"] { flex: 1; }
+
+  /* ряды для модалки антифрода */
+  .fraud-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 70px;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eef0f3;
+    font-size: 12px;
+  }
+  .fraud-row .code { font-family: monospace; font-weight: 700; color: #1e3a5f; }
+  .fraud-row .desc { color: #1a2733; line-height: 1.4; }
+  .fraud-row .action { font-weight: 600; font-size: 11px; }
+  .fraud-row .action.block { color: #a13030; }
+  .fraud-row .action.flag { color: #8a6500; }
+  .fraud-row .action.reduce { color: #6b7785; }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <h1>Реферальная программа «Рабочие Руки» — прототипы UI</h1>
+  <span class="badge">v5 · 18.05.2026</span>
+  <div class="spacer"></div>
+  <div class="surface-tabs">
+    <button class="active" onclick="showSurface('mobile', event)">Мобильное приложение</button>
+    <button onclick="showSurface('crm', event)">CRM</button>
+  </div>
+</div>
+
+<!-- ========== МОБИЛЬНОЕ ПРИЛОЖЕНИЕ ========== -->
+<div class="stage" id="surface-mobile">
+
+  <div class="phone-wrap">
+
+    <!-- Экран 1: Личный кабинет с входом в реф-программу -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phone-status"><span>13:45</span><span>• • •  📶  🔋</span></div>
+      <div class="phone-header"><h2>Личный кабинет</h2></div>
+      <div class="phone-body">
+        <div class="phone-title-screen">Экран 1 · Профиль — вход в программу</div>
+
+        <!-- блок СБП -->
+        <div class="m-card" style="background: linear-gradient(135deg, #e63946, #b81e2c); color: white;">
+          <div style="font-size:12px;opacity:0.9;margin-bottom:6px;">Карта для получения выплат</div>
+          <div style="font-size:13px;font-family:monospace;margin-bottom:10px;">**** **** **** 9155</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:22px;font-weight:700;">0.00 ₽</div>
+            <div style="display:flex;gap:8px;font-size:18px;">
+              <span>📱</span><span>📋</span><span>✏️</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- профиль кратко -->
+        <div class="m-card" style="text-align:center;padding:18px 14px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4a6fa5,#1e3a5f);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;margin:0 auto 8px;">В.К</div>
+          <div style="font-size:15px;font-weight:600;">Василий Квадратный</div>
+          <div style="font-size:12px;color:#6b7785;margin-top:2px;">Редактировать профиль ›</div>
+          <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;font-size:11px;color:#6b7785;">
+            <div>Отработано: <b style="color:#1a2733;">1</b></div>
+            <div>Отказов: <b style="color:#1a2733;">1</b></div>
+            <div>Штрафов: <b style="color:#1a2733;">5</b></div>
+          </div>
+        </div>
+
+        <!-- ВХОД В РЕФ-ПРОГРАММУ — единственная кнопка -->
+        <div class="menu-item highlight" onclick="alert('Открыть экран «Реферальная программа» →')">
+          <div class="menu-icon">🎁</div>
+          <div class="menu-text">
+            <div class="menu-title">Реферальная программа</div>
+            <div class="menu-sub" style="color:#8a6500;">Пригласи друга — получай выплаты</div>
+          </div>
+          <span class="menu-badge">NEW</span>
+        </div>
+
+        <div class="m-card" style="padding: 0 14px;">
+          <div class="menu-item">
+            <div class="menu-icon">👤</div>
+            <div class="menu-text"><div class="menu-title">Профиль</div></div>
+            <span class="menu-chev">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">📄</div>
+            <div class="menu-text"><div class="menu-title">Договоры</div></div>
+            <span class="menu-chev">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">🛠</div>
+            <div class="menu-text"><div class="menu-title">Сервис</div></div>
+            <span class="menu-chev">›</span>
+          </div>
+          <div class="menu-item">
+            <div class="menu-icon">📰</div>
+            <div class="menu-text"><div class="menu-title">Новости и вопросы</div></div>
+            <span class="menu-chev">›</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab"><span class="icon">🏠</span>Главная</div>
+        <div class="tab"><span class="icon">📋</span>Поиск</div>
+        <div class="tab"><span class="icon">📄</span>Задания</div>
+        <div class="tab"><span class="icon">📍</span>Карта</div>
+        <div class="tab active"><span class="icon">👤</span>Профиль</div>
+      </div>
+    </div>
+
+    <!-- Экран 2: Реферальная программа — единственный экран с инфо -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="phone-status"><span>13:46</span><span>• • •  📶  🔋</span></div>
+      <div class="phone-header">
+        <h2>← Реферальная программа</h2>
+      </div>
+      <div class="phone-body">
+        <div class="phone-title-screen">Экран 2 · Главная реф-программы</div>
+
+        <div class="ref-hero">
+          <div class="title">
+            <span>🎁 Пригласи друга</span>
+            <span class="info-btn" onclick="openModal('mobile-howto')">i</span>
+          </div>
+          <div class="amount">1 500 ₽</div>
+          <div class="sub-small">за каждого приведённого исполнителя</div>
+
+          <div class="ref-link-box">
+            <span>wh.ru/r/A8X3K9P2</span>
+            <button class="copy-btn" onclick="copyRefMessage('wh.ru/r/A8X3K9P2', this)">📋 Копировать</button>
+          </div>
+
+          <button class="share-single" onclick="alert('Откроется системный share-sheet')">
+            📤 Поделиться ссылкой
+          </button>
+        </div>
+
+        <!-- 3 стат-ячейки: сумма выплат + число приведённых -->
+        <div class="stat-row">
+          <div class="stat-cell">
+            <div class="v">3</div>
+            <div class="l">приведено<br/>исполнителей</div>
+          </div>
+          <div class="stat-cell">
+            <div class="v">12 480 ₽</div>
+            <div class="l">сумма<br/>выплат</div>
+          </div>
+        </div>
+
+        <button class="ask-btn" onclick="openModal('mobile-ask')">
+          💬 Задать вопрос
+        </button>
+
+        <div style="text-align:center;font-size:11px;color:#6b7785;margin-top:14px;line-height:1.5;">
+          Жми <b>i</b> — узнаешь, как программа считает выплаты.<br/>
+          Жми «Задать вопрос» — напишешь нам напрямую.
+        </div>
+      </div>
+      <div class="phone-tabbar">
+        <div class="tab"><span class="icon">🏠</span>Главная</div>
+        <div class="tab"><span class="icon">📋</span>Поиск</div>
+        <div class="tab"><span class="icon">📄</span>Задания</div>
+        <div class="tab"><span class="icon">📍</span>Карта</div>
+        <div class="tab active"><span class="icon">👤</span>Профиль</div>
+      </div>
+
+      <!-- Модалка инструкции (i) -->
+      <div class="modal-overlay" id="mobile-howto">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <h3>Как работает реферальная программа</h3>
+          <div style="font-size:13px;color:#6b7785;margin-bottom:14px;line-height:1.5;">
+            За каждого друга, который пройдёт путь от регистрации до 10 заданий, ты получаешь до <b>1 500 ₽</b>.
+          </div>
+
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">Поделись своей ссылкой с другом — через Telegram, MAX, WhatsApp или любой другой канал.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">Друг скачивает приложение и регистрируется. Когда получит статус самозанятого — тебе начислят <b>+100 ₽</b>.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">Друг выполнит 1-е подтверждённое и оплаченное задание — <b>+500 ₽</b>.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">Друг доходит до 5 подтверждённых и оплаченных заданий — <b>+1 000 ₽</b>.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body">Друг доходит до 10 подтверждённых и оплаченных заданий — <b>+900 ₽</b>.</div>
+          </div>
+
+          <div style="background:#f0f3f7;padding:12px;border-radius:8px;font-size:12px;color:#1a2733;line-height:1.6;margin: 14px 0 16px;">
+            <b>Когда задание засчитывается:</b> только после подтверждения заказчиком и оплаты. Если задание отменят — начисление снимется. На случай отмены ставим заморозку на 30 дней, потом перевод на карту.
+          </div>
+
+          <button class="modal-close" onclick="closeModal('mobile-howto')">Понятно</button>
+        </div>
+      </div>
+
+      <!-- Модалка «Задать вопрос» -->
+      <div class="modal-overlay" id="mobile-ask">
+        <div class="modal-sheet">
+          <div class="modal-handle"></div>
+          <h3>Как с нами связаться</h3>
+          <div style="font-size:13px;color:#6b7785;margin-bottom:14px;line-height:1.5;">
+            Выбери удобный канал — ответим в рабочее время. По вопросам выплат — лучше Telegram или почта.
+          </div>
+
+          <div class="contact-channel" onclick="alert('Открыть Telegram: @operaRR')">
+            <div class="ch-ico tg">✈</div>
+            <div class="ch-body">
+              <div class="ch-title">Telegram</div>
+              <div class="ch-value" data-contact="telegram">@operaRR</div>
+            </div>
+            <span class="ch-chev">›</span>
+          </div>
+
+          <div class="contact-channel" onclick="alert('Открыть MAX-мессенджер: +7 925 716-44-78')">
+            <div class="ch-ico mx">M</div>
+            <div class="ch-body">
+              <div class="ch-title">MAX</div>
+              <div class="ch-value" data-contact="max">+7 925 716-44-78</div>
+            </div>
+            <span class="ch-chev">›</span>
+          </div>
+
+          <div class="contact-channel" onclick="alert('Открыть почтовый клиент: support@handswork.net')">
+            <div class="ch-ico em">@</div>
+            <div class="ch-body">
+              <div class="ch-title">Email</div>
+              <div class="ch-value" data-contact="email">support@handswork.net</div>
+            </div>
+            <span class="ch-chev">›</span>
+          </div>
+
+          <div class="contact-channel" onclick="alert('Позвонить: +7 925 716-44-78')">
+            <div class="ch-ico ph">☎</div>
+            <div class="ch-body">
+              <div class="ch-title">Позвонить</div>
+              <div class="ch-value" data-contact="phone">+7 925 716-44-78</div>
+            </div>
+            <span class="ch-chev">›</span>
+          </div>
+
+          <button class="modal-close" onclick="closeModal('mobile-ask')">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== CRM ========== -->
+<div class="stage" id="surface-crm" style="display:none;">
+  <div class="crm-frame">
+    <div class="crm-sidebar">
+      <div class="logo">РР</div>
+      <div class="nav-icon">📋</div>
+      <div class="nav-icon">✓</div>
+      <div class="nav-icon">👥</div>
+      <div class="nav-icon active">🎁</div>
+      <div class="nav-icon">⚠️</div>
+      <div class="nav-icon">👷</div>
+      <div class="nav-icon">💼</div>
+      <div class="nav-icon">⚙️</div>
+      <div style="margin-top:auto;" class="nav-icon">↩</div>
+    </div>
+
+    <div class="crm-main">
+      <div class="crm-top">
+        <div class="title">Рабочие Руки · Реферальная программа</div>
+        <div class="right">
+          <span>Чеков: 12 | Споров: 3</span>
+          <span class="bell">🔔<span class="dot">1502</span></span>
+        </div>
+      </div>
+
+      <div class="crm-tabs">
+        <button class="active" onclick="showCrm('dashboard', event)">Дашборд</button>
+        <button onclick="showCrm('relations', event)">Реф-связи</button>
+        <button onclick="showCrm('links', event)">Ссылки</button>
+        <button onclick="showCrm('finance', event)">Финансы</button>
+        <button onclick="showCrm('settings', event)">⚙ Настройки</button>
+      </div>
+
+      <div class="crm-content">
+
+        <!-- ===== ДАШБОРД ===== -->
+        <div class="crm-screen active" id="crm-dashboard">
+
+          <div class="alert-banner">
+            ⚠️ 3 связи в очереди антифрода (флаги F-09, F-13). <a href="#" style="color:#1e88e5;font-weight:600;" onclick="openCrmModal('fraud');return false;">Описание флагов →</a>
+          </div>
+
+          <!-- ПЕРИОД (интерактивный) -->
+          <div class="period-row" data-period="dashboard">
+            <span class="lbl">Период:</span>
+            <div class="period-presets">
+              <button onclick="setPeriod(this, 'dashboard', 'today')">Сегодня</button>
+              <button onclick="setPeriod(this, 'dashboard', '7d')">7 дней</button>
+              <button onclick="setPeriod(this, 'dashboard', '30d')">30 дней</button>
+              <button class="active" onclick="setPeriod(this, 'dashboard', '90d')">90 дней</button>
+              <button onclick="setPeriod(this, 'dashboard', 'quarter')">Квартал</button>
+              <button onclick="setPeriod(this, 'dashboard', 'year')">Год</button>
+              <button onclick="setPeriod(this, 'dashboard', 'all')">Всё время</button>
+            </div>
+            <span class="lbl">или вручную:</span>
+            <div class="date-input">
+              <input type="text" value="18.02.2026">
+              <span>→</span>
+              <input type="text" value="18.05.2026">
+            </div>
+            <button class="apply-btn">Применить</button>
+          </div>
+
+          <!-- 3 KPI (убраны: «Новые СМЗ из реф» и сравнительный delta «к платному») -->
+          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="kpi-card">
+              <div class="label">CAC реф-канала <span class="info-icon" onclick="openCrmModal('cac')">i</span></div>
+              <div class="value">1 870 ₽</div>
+              <div class="delta" style="color:#6b7785;">за выбранный период</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Активные рефереры (30д) <span class="info-icon" onclick="openCrmModal('active-referrers')">i</span></div>
+              <div class="value">186</div>
+              <div class="delta up">↑ 18 % м/м</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">ROAS реф-канала <span class="info-icon" onclick="openCrmModal('roi')">i</span></div>
+              <div class="value">260%</div>
+              <div class="delta up">+40 п.п. за квартал</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>
+              <span class="left">Воронка: клик → 10 заданий <span class="info-icon" onclick="openCrmModal('funnel')">i</span></span>
+              <span class="small-link">за выбранный период →</span>
+            </h3>
+            <div class="funnel">
+              <div class="funnel-step"><div class="v">4 820</div><div class="l">Клики</div></div>
+              <div class="funnel-step"><div class="conv">26 %</div><div class="v">1 254</div><div class="l">Регистрации</div></div>
+              <div class="funnel-step"><div class="conv">61 %</div><div class="v">766</div><div class="l">СМЗ получен</div></div>
+              <div class="funnel-step"><div class="conv">69 %</div><div class="v">528</div><div class="l">= 1 задание</div></div>
+              <div class="funnel-step"><div class="conv">52 %</div><div class="v">274</div><div class="l">5 заданий</div></div>
+              <div class="funnel-step"><div class="conv">61 %</div><div class="v">167</div><div class="l">10 заданий</div></div>
+            </div>
+          </div>
+
+          <div class="top-block">
+            <div class="panel">
+              <h3>
+                <span class="left">Новые рефералы по дням</span>
+                <span class="small-link">выбранный период →</span>
+              </h3>
+              <div class="chart-area">
+                <div class="chart-bars" id="chart-new-refs"></div>
+                <div class="chart-axis">
+                  <span>18 фев</span><span>18 мар</span><span>18 апр</span><span>18 мая</span>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>Топ-10 приглашающих за 30 дней</h3>
+              <table class="data-table">
+                <tr><th>#</th><th>ФИО</th><th>Телефон</th><th>Привёл</th><th>Заработал</th></tr>
+                <tr><td>1</td><td>Виктор Мельников</td><td>+7 921 ***-12-45</td><td>12</td><td><b>34 200 ₽</b></td></tr>
+                <tr><td>2</td><td>Сергей Петров</td><td>+7 916 ***-08-71</td><td>9</td><td><b>27 800 ₽</b></td></tr>
+                <tr><td>3</td><td>Анна Дёмина</td><td>+7 903 ***-44-19</td><td>8</td><td><b>22 100 ₽</b></td></tr>
+                <tr><td>4</td><td>Иван Рябов</td><td>+7 962 ***-33-02</td><td>7</td><td>19 500 ₽</td></tr>
+                <tr><td>5</td><td>Олег Кузнецов</td><td>+7 985 ***-77-56</td><td>6</td><td>17 200 ₽</td></tr>
+                <tr><td>6</td><td>Дмитрий Орлов</td><td>+7 905 ***-91-14</td><td>5</td><td>14 800 ₽</td></tr>
+                <tr><td>7</td><td>Юлия Михайлова</td><td>+7 926 ***-65-30</td><td>5</td><td>13 900 ₽</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== РЕФ-СВЯЗИ ===== -->
+        <div class="crm-screen" id="crm-relations">
+          <div class="period-row" data-period="relations">
+            <span class="lbl">Период:</span>
+            <div class="period-presets">
+              <button onclick="setPeriod(this, 'relations', '7d')">7 дней</button>
+              <button onclick="setPeriod(this, 'relations', '30d')">30 дней</button>
+              <button class="active" onclick="setPeriod(this, 'relations', '90d')">90 дней</button>
+              <button onclick="setPeriod(this, 'relations', 'year')">Год</button>
+              <button onclick="setPeriod(this, 'relations', 'all')">Всё время</button>
+            </div>
+            <span class="lbl">или:</span>
+            <div class="date-input">
+              <input type="text" value="18.02.2026">
+              <span>→</span>
+              <input type="text" value="18.05.2026">
+            </div>
+            <button class="apply-btn">Применить</button>
+          </div>
+
+          <div class="filter-row">
+            <div class="search-box"><input type="text" placeholder="🔍 Поиск по ФИО, телефону, ИНН…"></div>
+            <button class="filter-pill">Город ▾</button>
+            <button class="filter-pill has-value">Статус: актив <span class="x">×</span></button>
+            <button class="filter-pill">Флаги антифрода ▾</button>
+            <button class="filter-pill">Диапазон сумм ▾</button>
+            <button class="btn-primary" style="margin-left:auto;">📥 Экспорт CSV</button>
+            <button class="btn-secondary">➕ Колонки</button>
+          </div>
+
+          <div class="panel" style="padding: 0; overflow: hidden;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox"></th>
+                  <th>Регистрация ↓</th>
+                  <th>Город</th>
+                  <th>Приглашающий</th>
+                  <th>Телефон</th>
+                  <th>Реферал</th>
+                  <th>Телефон</th>
+                  <th>Заданий</th>
+                  <th>Выплачено</th>
+                  <th>Статус</th>
+                  <th>Флаги</th>
+                  <th>Действие</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>13.05.2026 09:14</td><td>СПб</td>
+                  <td>Виктор Мельников</td><td>+7 921 ***-12-45</td>
+                  <td>Михаил Кузнецов</td><td>+7 921 ***-89-04</td>
+                  <td>15</td><td><b>3 760 ₽</b></td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>11.05.2026 16:42</td><td>МСК</td>
+                  <td>Сергей Петров</td><td>+7 916 ***-08-71</td>
+                  <td>Алексей Никитин</td><td>+7 999 ***-21-78</td>
+                  <td>23</td><td><b>4 140 ₽</b></td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-alexey')">Открыть</button></td>
+                </tr>
+                <tr style="background:#fff8e1;">
+                  <td><input type="checkbox"></td>
+                  <td>10.05.2026 11:02</td><td>СПб</td>
+                  <td>Анна Дёмина</td><td>+7 903 ***-44-19</td>
+                  <td>Василий Карасёв</td><td>+7 925 ***-50-13</td>
+                  <td>1</td><td>600 ₽</td>
+                  <td><span class="tag tag-frozen">review</span></td>
+                  <td><span class="tag tag-cancelled" onclick="openCrmModal('fraud')" style="cursor:pointer;">F-09</span></td>
+                  <td><button class="btn-link" style="color:#a13030;font-weight:600;" onclick="openCrmModal('ref-mikhail')">Разобрать</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>09.05.2026 22:18</td><td>МСК</td>
+                  <td>Виктор Мельников</td><td>+7 921 ***-12-45</td>
+                  <td>Сергей Васильев</td><td>+7 909 ***-72-86</td>
+                  <td>4</td><td>840 ₽</td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-sergey')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>07.05.2026 14:30</td><td>Каз</td>
+                  <td>Дмитрий Орлов</td><td>+7 905 ***-91-14</td>
+                  <td>Кайрат Жанасов</td><td>+7 987 ***-22-49</td>
+                  <td>11</td><td><b>3 700 ₽</b></td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>05.05.2026 10:55</td><td>СПб</td>
+                  <td>Олег Кузнецов</td><td>+7 985 ***-77-56</td>
+                  <td>Артур Григорян</td><td>+7 916 ***-04-31</td>
+                  <td>60</td><td><b>4 870 ₽</b></td>
+                  <td><span class="tag tag-frozen">60 заданий</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>03.05.2026 18:21</td><td>МСК</td>
+                  <td>Иван Рябов</td><td>+7 962 ***-33-02</td>
+                  <td>Рустам Файзуллин</td><td>+7 985 ***-99-27</td>
+                  <td>32</td><td><b>4 620 ₽</b></td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr style="background:#fdecea;">
+                  <td><input type="checkbox"></td>
+                  <td>02.05.2026 13:08</td><td>СПб</td>
+                  <td>Анна Дёмина</td><td>+7 903 ***-44-19</td>
+                  <td>Тимур Багиров</td><td>+7 921 ***-66-15</td>
+                  <td>0</td><td>—</td>
+                  <td><span class="tag tag-cancelled">фрод</span></td>
+                  <td><span class="tag tag-cancelled" onclick="openCrmModal('fraud')" style="cursor:pointer;">F-13 + F-02</span></td>
+                  <td><button class="btn-link" style="color:#a13030;" onclick="openCrmModal('ref-mikhail')">Заблок.</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>01.05.2026 09:44</td><td>МСК</td>
+                  <td>Сергей Петров</td><td>+7 916 ***-08-71</td>
+                  <td>Иван Зайцев</td><td>+7 925 ***-18-90</td>
+                  <td>3</td><td>820 ₽</td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td>28.04.2026 15:11</td><td>Кр-р</td>
+                  <td>Юлия Михайлова</td><td>+7 926 ***-65-30</td>
+                  <td>Павел Антонов</td><td>+7 989 ***-37-44</td>
+                  <td>8</td><td>1 940 ₽</td>
+                  <td><span class="tag tag-paid">актив</span></td><td>—</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#6b7785;">
+              <div>Показано 1–10 из 1 254</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                Строк: <select style="border:1px solid #d4dae3;border-radius:4px;padding:2px 6px;"><option>10</option><option>25</option><option>50</option></select>
+                <button class="btn-secondary" style="padding: 4px 10px;">‹</button>
+                <button class="btn-secondary" style="padding: 4px 10px;background:#1e88e5;color:white;border-color:#1e88e5;">1</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">2</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">3</button>
+                <span>…</span>
+                <button class="btn-secondary" style="padding: 4px 10px;">126</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ССЫЛКИ ===== -->
+        <div class="crm-screen" id="crm-links">
+          <div class="period-row" data-period="links">
+            <span class="lbl">Период:</span>
+            <div class="period-presets">
+              <button onclick="setPeriod(this, 'links', 'today')">Сегодня</button>
+              <button onclick="setPeriod(this, 'links', '7d')">7 дней</button>
+              <button class="active" onclick="setPeriod(this, 'links', '30d')">30 дней</button>
+              <button onclick="setPeriod(this, 'links', 'quarter')">Квартал</button>
+              <button onclick="setPeriod(this, 'links', 'all')">Всё время</button>
+            </div>
+            <span class="lbl">или:</span>
+            <div class="date-input">
+              <input type="text" value="18.04.2026">
+              <span>→</span>
+              <input type="text" value="18.05.2026">
+            </div>
+            <div style="margin-left:auto;font-size:12px;color:#6b7785;">
+              Личная ссылка генерируется автоматически при регистрации исполнителя.
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="label">Активные ссылки (30д) <span class="info-icon" onclick="openCrmModal('active-links')">i</span></div>
+              <div class="value">186</div>
+              <div class="delta" style="color:#6b7785;">≥1 переход за период</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Переходов · 30д</div>
+              <div class="value">1 248</div>
+              <div class="delta" style="color:#2c7a4a;">▲ +18% к предыдущему периоду</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Конверсия в 1 задание</div>
+              <div class="value">11.4%</div>
+              <div class="delta" style="color:#6b7785;">средняя по реф-каналу</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Топ по ROAS</div>
+              <div class="value" style="font-size:14px;line-height:1.4;">Виктор Мельников<br/>+7 921 ***-12-45</div>
+              <div class="delta" style="color:#2c7a4a;">ROAS 310% · 7 заданий</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>
+              <span class="left">Личные ссылки исполнителей</span>
+              <span class="small-link" style="color:#6b7785;cursor:default;">формат wh.ru/r/{user_id}</span>
+            </h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox"></th>
+                  <th>Ссылка</th>
+                  <th>Приглашающий</th>
+                  <th>Телефон</th>
+                  <th>Переходов</th>
+                  <th>Регистр.</th>
+                  <th>→ СМЗ</th>
+                  <th>→ 1 задание</th>
+                  <th>Конв.</th>
+                  <th>Выплачено</th>
+                  <th>ROAS</th>
+                  <th>Создана</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/A8X3K9P2</code></td>
+                  <td>Виктор Мельников</td><td>+7 921 ***-12-45</td>
+                  <td>47</td><td>12</td><td>9</td><td>7</td>
+                  <td><b style="color:#2c7a4a;">14.9%</b></td>
+                  <td>14 320 ₽</td>
+                  <td><b style="color:#2c7a4a;">310%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">12.03.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/M3R7Q1XA</code></td>
+                  <td>Сергей Петров</td><td>+7 916 ***-08-71</td>
+                  <td>38</td><td>9</td><td>7</td><td>5</td>
+                  <td><b style="color:#2c7a4a;">13.2%</b></td>
+                  <td>11 200 ₽</td>
+                  <td><b style="color:#2c7a4a;">290%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">04.02.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/B5K9N2P4</code></td>
+                  <td>Дмитрий Орлов</td><td>+7 905 ***-91-14</td>
+                  <td>29</td><td>8</td><td>6</td><td>4</td>
+                  <td><b style="color:#2c7a4a;">13.8%</b></td>
+                  <td>9 800 ₽</td>
+                  <td><b style="color:#2c7a4a;">270%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">19.01.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/X7M4D8R3</code></td>
+                  <td>Олег Кузнецов</td><td>+7 985 ***-77-56</td>
+                  <td>22</td><td>5</td><td>4</td><td>3</td>
+                  <td><b style="color:#2c7a4a;">13.6%</b></td>
+                  <td>7 200 ₽</td>
+                  <td><b style="color:#2c7a4a;">240%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">28.02.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/L9P6V2K8</code></td>
+                  <td>Иван Рябов</td><td>+7 962 ***-33-02</td>
+                  <td>18</td><td>4</td><td>3</td><td>2</td>
+                  <td><b style="color:#2c7a4a;">11.1%</b></td>
+                  <td>4 800 ₽</td>
+                  <td><b style="color:#2c7a4a;">180%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">10.03.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/T2H8E5N1</code></td>
+                  <td>Юлия Михайлова</td><td>+7 926 ***-65-30</td>
+                  <td>15</td><td>3</td><td>2</td><td>2</td>
+                  <td><b style="color:#2c7a4a;">13.3%</b></td>
+                  <td>3 900 ₽</td>
+                  <td><b style="color:#2c7a4a;">160%</b></td>
+                  <td style="font-size:11px;color:#6b7785;">25.03.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><code style="font-size:11px;background:#f0f3f7;padding:2px 6px;border-radius:4px;">wh.ru/r/N4Y8K2W6</code></td>
+                  <td>Анна Дёмина</td><td>+7 903 ***-44-19</td>
+                  <td>12</td><td>2</td><td>1</td><td>0</td>
+                  <td style="color:#a13030;"><b>0%</b></td>
+                  <td>0 ₽</td>
+                  <td style="color:#9aa3ad;"><b>—</b></td>
+                  <td style="font-size:11px;color:#6b7785;">02.04.2026</td>
+                  <td><button class="btn-link" onclick="openCrmModal('ref-mikhail')">Открыть</button></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0 0;font-size:12px;color:#6b7785;">
+              <span>Показано 7 из 186 активных ссылок</span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn-secondary" style="padding: 4px 10px;">‹</button>
+                <button class="btn-secondary active" style="padding: 4px 10px;background:#1e88e5;color:white;">1</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">2</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">3</button>
+                <span>…</span>
+                <button class="btn-secondary" style="padding: 4px 10px;">27</button>
+                <button class="btn-secondary" style="padding: 4px 10px;">›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ФИНАНСЫ ===== -->
+        <div class="crm-screen" id="crm-finance">
+          <div class="period-row" data-period="finance">
+            <span class="lbl">Период:</span>
+            <div class="period-presets">
+              <button onclick="setPeriod(this, 'finance', '30d')">30 дней</button>
+              <button onclick="setPeriod(this, 'finance', 'quarter')">Квартал</button>
+              <button class="active" onclick="setPeriod(this, 'finance', 'year')">Год</button>
+              <button onclick="setPeriod(this, 'finance', 'all')">Всё время</button>
+            </div>
+            <span class="lbl">или:</span>
+            <div class="date-input">
+              <input type="text" value="01.01.2026">
+              <span>→</span>
+              <input type="text" value="18.05.2026">
+            </div>
+            <button class="apply-btn">Применить</button>
+          </div>
+
+          <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="kpi-card">
+              <div class="label">Выплачено за май</div>
+              <div class="value">186 400 ₽</div>
+              <div class="delta" style="color:#6b7785;">с 1 по 18 мая</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">В заморозке сейчас</div>
+              <div class="value">62 800 ₽</div>
+              <div class="delta" style="color:#6b7785;">размораж. до 30 дней</div>
+            </div>
+            <div class="kpi-card">
+              <div class="label">Прогноз обязательств 90д <span class="info-icon" onclick="openCrmModal('forecast')">i</span></div>
+              <div class="value">~485 000 ₽</div>
+              <div class="delta" style="color:#6b7785;">по активным рефералам</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>
+              <span class="left">Расходы по месяцам · разбивка по типу</span>
+              <span class="small-link">2026 год →</span>
+            </h3>
+            <div class="stacked-bars" id="stacked-fin"></div>
+            <div class="month-axis">
+              <div>Янв</div><div>Фев</div><div>Мар</div><div>Апр</div><div>Май*</div>
+            </div>
+            <div class="legend">
+              <div class="item"><div class="sw" style="background:#1e88e5;"></div>Milestone (фикс)</div>
+              <div class="item"><div class="sw" style="background:#6db4ee;"></div>Revenue share</div>
+              <div class="item"><div class="sw" style="background:#b8d8f5;"></div>Бонусы реферала</div>
+            </div>
+            <div style="font-size:11px;color:#6b7785;margin-top:8px;">* май — данные на 18.05 (неполный месяц)</div>
+          </div>
+
+          <div class="top-block">
+            <div class="panel">
+              <h3>
+                <span class="left">Прогноз обязательств <span class="info-icon" onclick="openCrmModal('forecast')">i</span></span>
+              </h3>
+              <div class="forecast-row"><span class="lbl">Через 30 дней</span><span class="val">~142 000 ₽</span></div>
+              <div class="forecast-row"><span class="lbl">Через 60 дней</span><span class="val">~298 000 ₽</span></div>
+              <div class="forecast-row"><span class="lbl">Через 90 дней</span><span class="val">~485 000 ₽</span></div>
+            </div>
+            <div class="panel">
+              <h3>Cap-защита</h3>
+              <div class="forecast-row"><span class="lbl">Реферер на месячном лимите (80 000 ₽)</span><span class="val">2 чел.</span></div>
+              <div class="forecast-row"><span class="lbl">Связи достигли cap 8 000 ₽</span><span class="val">14</span></div>
+              <div class="forecast-row"><span class="lbl">Закрыто по 60 заданиям</span><span class="val">23</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>
+              <span class="left">Реестр выплат (последние 50)</span>
+              <span class="small-link">📥 Выгрузка для бухгалтерии →</span>
+            </h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Дата</th><th>Получатель</th><th>Роль</th>
+                  <th>Основание</th><th>Способ</th><th>Сумма</th><th>Статус</th><th>НПД-чек</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>13.05.2026 11:02</td><td>Виктор Мельников</td><td>Приглашающий</td><td>Milestone (10 заданий · Алексей Никитин)</td><td>СБП</td><td><b>900 ₽</b></td><td><span class="tag tag-paid">выплачено</span></td><td>📄 №14820</td></tr>
+                <tr><td>13.05.2026 11:02</td><td>Алексей Никитин</td><td>Реферал</td><td>Бонус новичка 5 заданий</td><td>СБП</td><td>1 000 ₽</td><td><span class="tag tag-paid">выплачено</span></td><td>📄 №14821</td></tr>
+                <tr><td>13.05.2026 09:44</td><td>Сергей Петров</td><td>Приглашающий</td><td>RS · задание № 8 (Иван Зайцев)</td><td>СБП</td><td>60 ₽</td><td><span class="tag tag-paid">выплачено</span></td><td>📄 №14819</td></tr>
+                <tr><td>12.05.2026 18:12</td><td>Анна Дёмина</td><td>Приглашающий</td><td>Clawback · задание № 3 (Сергей Васильев)</td><td>—</td><td><span style="color:#a13030;">−60 ₽</span></td><td><span class="tag tag-cancelled">clawback</span></td><td>—</td></tr>
+                <tr><td>12.05.2026 14:00</td><td>Иван Рябов</td><td>Приглашающий</td><td>Milestone (СМЗ · Рустам Файзуллин)</td><td>ИП-счёт</td><td>100 ₽</td><td><span class="tag tag-paid">выплачено</span></td><td>—</td></tr>
+                <tr><td>11.05.2026 22:30</td><td>Дмитрий Орлов</td><td>Приглашающий</td><td>RS · задание № 11 (Кайрат Жанасов)</td><td>СБП</td><td>30 ₽</td><td><span class="tag tag-frozen">заморож.</span></td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ===== НАСТРОЙКИ ===== -->
+        <div class="crm-screen" id="crm-settings">
+
+          <div class="panel">
+            <h3>Расчётные коэффициенты</h3>
+
+            <div class="setting-row">
+              <div class="setting-label">Формула ROAS</div>
+              <div class="setting-control">
+                <div class="formula">ROAS = (revenue_from_referral_tasks / payouts_to_inviter) × 100%</div>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Горизонт начислений</div>
+              <div class="setting-control">
+                <input type="number" value="60" style="width:120px;">
+                <span class="setting-suffix">заданий реферала · после — программа закрывается</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Окно мягкого удаления</div>
+              <div class="setting-control">
+                <input type="number" value="30" style="width:120px;">
+                <span class="setting-suffix">дней · если исполнителя удалили из задания и вернули в окне — зачёт не пересчитывается. После — списание с баланса реферера.</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Cap выплат / месяц</div>
+              <div class="setting-control">
+                <input type="number" value="80000" style="width:120px;">
+                <span class="setting-suffix">₽ на одного приглашающего</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Источник выплат</div>
+              <div class="setting-control">
+                <select>
+                  <option>Платформа (из общего бюджета)</option>
+                  <option>Маржа с акционных клиентов</option>
+                  <option>Маржа с любого клиента</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Списание с баланса при отмене после выплаты</div>
+              <div class="setting-control">
+                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                <span class="setting-suffix">если задание отменили после уже выплаченного milestone'а — снимаем сумму с баланса реферера (минусом до следующей выплаты, если баланса нет)</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Право на ручную корректировку счётчика</div>
+              <div class="setting-control">
+                <div class="roles-chips">
+                  <label><input type="checkbox" checked><span>Маркетолог</span></label>
+                  <label><input type="checkbox" checked><span>Операционка</span></label>
+                  <label><input type="checkbox" checked><span>Поддержка</span></label>
+                  <label><input type="checkbox"><span>Финансы</span></label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- НОВАЯ ПАНЕЛЬ: контакты поддержки (тянутся в мобилку) -->
+          <div class="panel">
+            <h3>
+              <span class="left">Контакты поддержки <span class="info-icon" onclick="openCrmModal('contacts')">i</span></span>
+              <span class="small-link" style="color:#6b7785;cursor:default;">отображается в мобилке → «Задать вопрос»</span>
+            </h3>
+
+            <div class="setting-row">
+              <div class="setting-label">Telegram</div>
+              <div class="setting-control">
+                <input type="text" value="@operaRR" oninput="syncContact('telegram', this.value)">
+                <span class="setting-suffix">username канала или бота поддержки</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">MAX</div>
+              <div class="setting-control">
+                <input type="tel" value="+7 925 716-44-78" oninput="syncContact('max', this.value)">
+                <span class="setting-suffix">номер привязанного к MAX аккаунта</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Email</div>
+              <div class="setting-control">
+                <input type="email" value="support@handswork.net" oninput="syncContact('email', this.value)">
+                <span class="setting-suffix">почта поддержки</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Телефон</div>
+              <div class="setting-control">
+                <input type="tel" value="+7 925 716-44-78" oninput="syncContact('phone', this.value)">
+                <span class="setting-suffix">номер для звонка</span>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:#6b7785;margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;">
+              Изменения сохраняются автоматически и моментально обновляются в мобильном приложении (модалка «Задать вопрос»).
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>
+              <span class="left">Milestone-ставки</span>
+              <span class="small-link" style="color:#a13030;cursor:default;">⚠ placeholder · ставки пересчитываются после получения unit-экономики</span>
+            </h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Этап воронки</th><th>Сумма приглашающему</th><th>Бонус реферала</th><th>Срок начисления</th><th>Активно</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Статус СМЗ</td><td><input type="number" value="100" style="width:80px;padding:4px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> ₽</td><td>—</td><td>в момент получения СМЗ</td><td><input type="checkbox" checked></td></tr>
+                <tr><td>= 1 задание (подтверждённое и оплаченное)</td><td><input type="number" value="500" style="width:80px;padding:4px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> ₽</td><td>—</td><td>после заморозки 30д</td><td><input type="checkbox" checked></td></tr>
+                <tr><td>5 заданий (подтв. и оплач.)</td><td><input type="number" value="1000" style="width:80px;padding:4px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> ₽</td><td>1 000 ₽</td><td>после заморозки 30д</td><td><input type="checkbox" checked></td></tr>
+                <tr><td>10 заданий (подтв. и оплач.)</td><td><input type="number" value="900" style="width:80px;padding:4px 8px;border:1px solid #d4dae3;border-radius:4px;font-size:12px;"> ₽</td><td>—</td><td>после заморозки 30д</td><td><input type="checkbox" checked></td></tr>
+                <tr style="opacity:0.5;"><td>Revenue share после 10 заданий</td><td>% от комиссии</td><td>—</td><td>до 60-го задания реферала</td><td><input type="checkbox"></td></tr>
+              </tbody>
+            </table>
+            <div style="font-size:11px;color:#6b7785;margin-top:10px;">
+              Сумма за полный цикл (СМЗ + 1 + 5 + 10) = 2 500 ₽ приглашающему + 1 000 ₽ бонус рефералу. Hero мобилки показывает «1 500 ₽» — это placeholder; финальная сумма синхронизируется после пересчёта unit-экономики.
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Шаблон сообщения при копировании ссылки</h3>
+            <div style="font-size:12px;color:#6b7785;margin-bottom:10px;line-height:1.5;">
+              Этот текст копируется в буфер обмена вместе со ссылкой, когда исполнитель нажимает «📋 Копировать» в мобильном приложении. Поддерживается переменная <code>{link}</code> — туда подставится индивидуальная ссылка.
+            </div>
+            <textarea style="width:100%;padding:12px;border:1px solid #d4dae3;border-radius:6px;font-size:13px;font-family:inherit;line-height:1.5;resize:vertical;min-height:80px;">Я подрабатываю в Рабочих руках, давай со мной: {link}
+
+Регистрируйся по этой ссылке — после твоего 1-го задания мне капнет бонус, а тебе — приоритет на задания в твоём районе.</textarea>
+            <div style="display:flex;gap:10px;margin-top:10px;align-items:center;">
+              <button style="background:#1e88e5;color:white;border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Сохранить</button>
+              <button style="background:transparent;color:#1e88e5;border:1px solid #1e88e5;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;">Сбросить к дефолту</button>
+              <span style="font-size:11px;color:#6b7785;">Изменения применяются ко всем исполнителям сразу.</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Антифрод-пороги</h3>
+
+            <div class="setting-row">
+              <div class="setting-label">Дельта «клик → регистрация» (F-07)</div>
+              <div class="setting-control">
+                <input type="number" value="10" style="width:120px;">
+                <span class="setting-suffix">сек · меньше — FLAG (вероятный бот)</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Cap начислений / месяц (F-12)</div>
+              <div class="setting-control">
+                <input type="number" value="80000" style="width:120px;">
+                <span class="setting-suffix">₽ на исполнителя · сверх — pending review</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Рефералов / неделю (F-13)</div>
+              <div class="setting-control">
+                <input type="number" value="10" style="width:120px;">
+                <span class="setting-suffix">· сверх + нет дошедших до 5 заданий — FLAG партии</span>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-label">Аномалия удаления/возврата</div>
+              <div class="setting-control">
+                <input type="number" value="3" style="width:120px;">
+                <span class="setting-suffix">за 30 дней по одному реферу — FLAG (диспетчерская ошибка или накрутка)</span>
+              </div>
+            </div>
+
+            <div style="font-size:11px;color:#6b7785;margin-top:14px;padding-top:14px;border-top:1px solid #eef0f3;">
+              Полный список флагов F-01…F-16 — в модалке антифрода на вкладке Дашборд.
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="stage-note">
+    <b>v5 (18.05.2026):</b>
+    Мобилка упрощена до 2 экранов — Личный кабинет + Реф-программа (ссылка, сумма выплат, число приведённых исполнителей, кнопка <b>i</b> с инструкцией, кнопка «Задать вопрос» с каналами связи). А/Б-тест и вариант A удалены.
+    CRM: убраны KPI «Новые СМЗ» и сравнение с другими источниками; «смена» → «задание» по всему UI; в воронке шаг «= 1 задание» (равенство), формулировки «B с 5/10 подтверждёнными и оплаченными заданиями»; ФИО + телефон вместо B/A-номеров; селекторы периода интерактивные.
+    Логика откатов: окно мягкого удаления — 30 дней; ручная корректировка счётчика — маркетолог/операционка/поддержка; списание с баланса при отмене после выплаты milestone'а.
+    Настройки: новая панель «Контакты поддержки» (Telegram/MAX/Email/телефон, тянется в мобилку).
+  </div>
+</div>
+
+<!-- ===== CRM-МОДАЛКИ ===== -->
+
+<!-- CAC -->
+<div class="crm-modal-overlay" id="crm-modal-cac">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Как считается CAC реф-канала</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('cac')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <h4>Формула</h4>
+      <div class="formula-box">CAC_ref = Σ выплаты приглашающим + Σ бонусы рефералам
+        ──────────────────────────────────────
+        число рефералов, дошедших до 1 задания</div>
+      <h4>Что включается в числитель</h4>
+      <table>
+        <tr><td>Приглашающий</td><td>Все milestone- и revenue-share-выплаты за период</td></tr>
+        <tr><td>Реферал</td><td>Все бонусы новичка за период</td></tr>
+      </table>
+      <h4>Что в знаменателе</h4>
+      <p>Не регистрации, а <b>рефералы, которые сделали ≥1 подтверждённое и оплаченное задание в выбранном периоде</b>. Это отсекает «мёртвые души» (зарегистрировался и пропал) и даёт честную стоимость работающего исполнителя.</p>
+      <h4>Что не учитывается</h4>
+      <p>Операционные расходы (зарплата контролёра, амортизация разработки, пуш/SMS) <b>в CAC реф-канала не входят</b> — отдельный бюджет на канал мы не тратим. Если когда-то начнём — Opex добавится сюда.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ROAS -->
+<div class="crm-modal-overlay" id="crm-modal-roi">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Как считается ROAS реф-канала</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('roi')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <h4>Формула</h4>
+      <div class="formula-box">ROAS = (Σ доход с заданий рефералов / Σ выплат) × 100%</div>
+      <h4>Что считается</h4>
+      <p>Для каждого подтверждённого и оплаченного задания приведённого реферала берём <b>комиссию платформы</b> (выручку платформы с задания — до вычета opex). Суммируем за период. Делим на сумму реф-выплат (приглашающему + бонусы рефералу) за тот же период. Умножаем на 100%.</p>
+      <h4>Текущее значение 260%</h4>
+      <p>На каждый 1 ₽, выплаченный по программе, платформа получает 2.6 ₽ выручки с заданий приведённых рефералов. Целевое значение ≥ 150% для окупаемости; «отлично» — от 300%.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Funnel -->
+<div class="crm-modal-overlay" id="crm-modal-funnel">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Воронка — как читать</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('funnel')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <table>
+        <tr><td>Клик</td><td>Уникальные клики по реф-ссылкам за период (1 device fingerprint = 1 клик в сутки)</td></tr>
+        <tr><td>Регистрация</td><td>Рефералы, кликнувшие и зарегистрировавшиеся за окно 30 дней (last paid click)</td></tr>
+        <tr><td>СМЗ получен</td><td>Рефералы с подтверждённым статусом самозанятого через ФНС</td></tr>
+        <tr><td>= 1 задание</td><td><b>Ровно</b> 1 подтверждённое и оплаченное задание (не больше — иначе уходит в следующий шаг)</td></tr>
+        <tr><td>5 заданий</td><td>Реферал с 5 подтверждёнными и оплаченными заданиями</td></tr>
+        <tr><td>10 заданий</td><td>Реферал с 10 подтверждёнными и оплаченными заданиями — точка, до которой пока считаем окупаемость</td></tr>
+      </table>
+      <h4>Почему именно «оплаченное»</h4>
+      <p>Задание засчитывается только после подтверждения заказчиком и фактической оплаты — простая запись/отклик не считается. Если задание отменят в окне мягкого удаления (30 дней) — оно перестаёт учитываться.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Active referrers (новая) -->
+<div class="crm-modal-overlay" id="crm-modal-active-referrers">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Кто считается активным реферером</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('active-referrers')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <p>Активный реферер = исполнитель, у которого за выбранный период (по умолчанию 30 дней) есть <b>хотя бы 1 реферал с ≥1 подтверждённым и оплаченным заданием</b>.</p>
+      <p style="margin-top:10px;">Это не то же самое, что «активная ссылка» (вкладка Ссылки) — там критерий слабее: достаточно ≥1 перехода по ссылке. Реферер активен только если его привлечение реально сработало.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Active links (новая) -->
+<div class="crm-modal-overlay" id="crm-modal-active-links">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Активные ссылки — кто попадает</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('active-links')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <p>Активная ссылка = по которой был <b>хотя бы 1 переход</b> за выбранный период. Это более «верхняя» метрика, чем «активные рефереры» в Дашборде — здесь мы смотрим, кто вообще делится ссылкой, даже если переход не дошёл до регистрации.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Contacts (новая) -->
+<div class="crm-modal-overlay" id="crm-modal-contacts">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Контакты поддержки</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('contacts')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <p>Эти значения отображаются в мобильном приложении, когда исполнитель нажимает «Задать вопрос» на экране Реферальной программы. Изменения применяются моментально — пользователи увидят новые контакты при следующем открытии модалки.</p>
+      <h4>Поведение по каналам</h4>
+      <table>
+        <tr><td>Telegram</td><td>Открывает t.me/{username} или t.me/+{phone}</td></tr>
+        <tr><td>MAX</td><td>Открывает диплинк MAX-мессенджера на указанный номер</td></tr>
+        <tr><td>Email</td><td>Открывает mailto: с темой «Реф-программа»</td></tr>
+        <tr><td>Телефон</td><td>Открывает tel: на устройстве</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Forecast -->
+<div class="crm-modal-overlay" id="crm-modal-forecast">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Как считается прогноз обязательств</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('forecast')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <h4>Из чего состоит прогноз</h4>
+      <p>Прогноз обязательств — это <b>деньги, которые мы с высокой вероятностью должны будем выплатить</b> в ближайшие 30/60/90 дней по уже существующим реф-связям. Это <b>не</b> бюджет и <b>не</b> расходы, это accruals.</p>
+
+      <h4>Три слагаемых</h4>
+      <div class="formula-box">forecast(horizon) = frozen_payable + expected_milestones + expected_rs</div>
+      <table>
+        <tr><td>frozen_payable</td><td>Все начисления в статусе frozen, у которых frozen_until попадает в горизонт. По ним всё уже произошло — ждём окончания 30-дневной заморозки.</td></tr>
+        <tr><td>expected_milestones</td><td>Для каждого активного реферала прогнозируем достижение milestone (1, 5, 10) на основе текущего темпа заданий × вероятность ретеншна на следующем шаге воронки.</td></tr>
+        <tr><td>expected_rs</td><td>Σ по активным рефералам: ожидаемое число заданий в горизонте × средняя чистая комиссия × коэффициент decay (10/5/2% в зависимости от сегмента заданий).</td></tr>
+      </table>
+
+      <h4>Точность</h4>
+      <p>На горизонте 30 дней — ±10%, на 90 днях — ±25%. Прогноз не учитывает clawback (возвраты заказчиков) — он считается отдельно по статистике отмен.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Fraud -->
+<div class="crm-modal-overlay" id="crm-modal-fraud">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Антифрод-флаги F-01 … F-16</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('fraud')">×</button>
+    </div>
+    <div class="crm-modal-body">
+      <p style="margin-bottom: 14px;">Правила выполняются на backend при каждом ключевом событии (регистрация, выполнение задания, формирование начисления).</p>
+      <p style="margin-bottom: 16px;">
+        <span style="color:#a13030;font-weight:600;">●&nbsp;BLOCK</span> — отказ в действии &nbsp;
+        <span style="color:#8a6500;font-weight:600;">●&nbsp;FLAG</span> — начисление в pending review &nbsp;
+        <span style="color:#6b7785;font-weight:600;">●&nbsp;REDUCE</span> — начисление с понижающим коэффициентом
+      </p>
+
+      <h4>Жёсткие блокировки (на регистрации)</h4>
+      <div class="fraud-row"><span class="code">F-01</span><span class="desc">IP при клике = IP при регистрации = IP реферера за последние 30 дней</span><span class="action block">BLOCK</span></div>
+      <div class="fraud-row"><span class="code">F-02</span><span class="desc">Device fingerprint реферера совпадает с реферала (≥3 параметра)</span><span class="action block">BLOCK</span></div>
+      <div class="fraud-row"><span class="code">F-03</span><span class="desc">Телефон реферала уже встречался у реферера или у его прошлых рефералов</span><span class="action block">BLOCK</span></div>
+      <div class="fraud-row"><span class="code">F-04</span><span class="desc">ИНН реферала = ИНН реферера или любого предыдущего реферала</span><span class="action block">BLOCK</span></div>
+      <div class="fraud-row"><span class="code">F-15</span><span class="desc">Реферер = реферал (по ИНН, телефону, паспорту)</span><span class="action block">BLOCK</span></div>
+      <div class="fraud-row"><span class="code">F-16</span><span class="desc">Email реферала в blacklist одноразовых ящиков</span><span class="action block">BLOCK</span></div>
+
+      <h4>Флаги на ручную проверку</h4>
+      <div class="fraud-row"><span class="code">F-05</span><span class="desc">Банковские реквизиты выплат реферера совпадают с реферала</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-06</span><span class="desc">Адрес проживания совпадает</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-07</span><span class="desc">Дельта «клик → регистрация» меньше 10 секунд (вероятный бот)</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-08</span><span class="desc">Геолокация реферала vs история реферера: &gt; 1500 км и за 30 дней не пересекались</span><span class="action flag">FLAG</span></div>
+
+      <h4>Флаги по поведению на заданиях</h4>
+      <div class="fraud-row"><span class="code">F-09</span><span class="desc">За первые 5 заданий все — от заказчиков, зарегистрированных в одно окно с рефералом (вероятный сговор)</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-10</span><span class="desc">За первые 10 заданий доля с одним заказчиком &gt; 80 %</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-11</span><span class="desc">Темп заданий аномален (&gt; 5/день в течение 3 дней подряд)</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-14</span><span class="desc">Заказчик связан с реферером (один платёжный счёт, телефон)</span><span class="action block">BLOCK</span></div>
+
+      <h4>Капы, партии и аномалии счётчика</h4>
+      <div class="fraud-row"><span class="code">F-12</span><span class="desc">Σ начислений за месяц &gt; 80 000 ₽ — все следующие до конца месяца в pending</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-13</span><span class="desc">Реферер привёл &gt; 10 рефералов за 7 дней, ни один не дошёл до 5 заданий — флаг всей партии</span><span class="action flag">FLAG</span></div>
+      <div class="fraud-row"><span class="code">F-17</span><span class="desc">&gt; 3 удалений-возвратов в окне 30 дней по одному рефералу — диспетчерская ошибка или накрутка, требует ручной проверки</span><span class="action flag">FLAG</span></div>
+
+      <h4>Что дальше</h4>
+      <p>Все срабатывания пишутся в <code>referral_events</code> с timestamp и причиной. Контролёр видит все FLAG-кейсы в очереди «Антифрод» и может: одобрить (false positive), отклонить, пересчитать, разорвать связь или эскалировать.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Карточка реферала: Михаил (с прогрессом + логом корректировок) -->
+<div class="crm-modal-overlay" id="crm-modal-ref-mikhail">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Карточка реферала · Михаил Кузнецов</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('ref-mikhail')">×</button>
+    </div>
+    <div class="crm-modal-body">
+
+      <div class="ref-card-head">
+        <div class="ref-card-avatar">МК</div>
+        <div class="ref-card-info">
+          <div class="ref-card-name">Михаил Кузнецов</div>
+          <div class="ref-card-meta">+7 921 ***-89-04 · ИНН 7801*****12 · СПб<br/>привёл: Виктор Мельников (+7 921 ***-12-45) · ссылка wh.ru/r/A8X3K9P2 · 13.03.2026</div>
+        </div>
+        <div class="ref-card-sum">
+          <div class="amt">15</div>
+          <div class="lbl">подтв. и оплач.<br/>заданий</div>
+        </div>
+      </div>
+
+      <h4>Прогресс по milestone'ам</h4>
+      <div class="ms-grid">
+        <div class="ms-row">
+          <div class="ms-tick done">✓</div>
+          <div class="ms-body">Регистрация<div class="ms-sub">13.03.2026</div></div>
+          <div class="ms-pay locked">—</div>
+        </div>
+        <div class="ms-row">
+          <div class="ms-tick done">✓</div>
+          <div class="ms-body">Статус СМЗ<div class="ms-sub">14.03.2026</div></div>
+          <div class="ms-pay paid">+100 ₽</div>
+        </div>
+        <div class="ms-row">
+          <div class="ms-tick done">✓</div>
+          <div class="ms-body">= 1 задание<div class="ms-sub">19.03.2026 · подтв. и оплач.</div></div>
+          <div class="ms-pay paid">+500 ₽</div>
+        </div>
+        <div class="ms-row">
+          <div class="ms-tick done">✓</div>
+          <div class="ms-body">5 заданий<div class="ms-sub">22.04.2026 · подтв. и оплач.</div></div>
+          <div class="ms-pay paid">+1 000 ₽</div>
+        </div>
+        <div class="ms-row">
+          <div class="ms-tick pending">…</div>
+          <div class="ms-body">10 заданий <span style="color:#8a6500;font-weight:600;">(5 осталось)</span><div class="ms-sub">прогресс 15 / 10 · ожидаем подтверждения серии</div></div>
+          <div class="ms-pay frozen">+900 ₽</div>
+        </div>
+      </div>
+
+      <h4>Корректировки счётчика</h4>
+      <div style="font-size:12px;color:#6b7785;margin-bottom:8px;">Журнал всех ручных правок счётчика заданий. Каждая запись — кто, когда, на сколько, по какой задаче и с какой причиной.</div>
+
+      <div style="font-size:11px;color:#6b7785;text-transform:uppercase;letter-spacing:0.4px;display:grid;grid-template-columns:100px 1fr 140px 100px;gap:10px;padding-bottom:6px;border-bottom:1px solid #e6e9ee;">
+        <span>Когда</span><span>Причина</span><span>Кто</span><span>Δ счётчика</span>
+      </div>
+      <div class="adj-row">
+        <span class="when">12.05.2026</span>
+        <span>Диспетчер случайно удалил из задания TASK-44821 и вернул через 4 ч. Возврат в окне мягкого удаления.</span>
+        <span class="who">Ольга К.<br/><span style="color:#6b7785;font-weight:400;font-size:11px;">операционка</span></span>
+        <span class="delta-plus">— (авто-восстановление)</span>
+      </div>
+      <div class="adj-row">
+        <span class="when">28.04.2026</span>
+        <span>Клиент задним числом подтвердил задание TASK-43102, которое было ошибочно помечено как невыполненное.</span>
+        <span class="who">Ирина З.<br/><span style="color:#6b7785;font-weight:400;font-size:11px;">маркетинг</span></span>
+        <span class="delta-plus">+1 задание</span>
+      </div>
+
+      <div class="adj-form">
+        <div style="font-size:13px;font-weight:600;color:#1a2733;margin-bottom:8px;">➕ Добавить корректировку</div>
+        <div class="form-row">
+          <select>
+            <option>+1 задание</option>
+            <option>−1 задание</option>
+          </select>
+          <input type="text" placeholder="ID задания (TASK-…)">
+          <input type="text" placeholder="Причина" style="flex:2;">
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <button class="btn-primary">Применить</button>
+          <span style="font-size:11px;color:#6b7785;">Запись попадёт в журнал. Право на корректировку — маркетолог / операционка / поддержка (см. Настройки).</span>
+        </div>
+      </div>
+
+      <h4>Логика откатов · напоминание</h4>
+      <p style="font-size:12px;color:#1a2733;line-height:1.6;">
+        <b>Окно мягкого удаления — 30 дней.</b> Если исполнителя удалили из задания и вернули в окне — счётчик не пересчитывается. Если не вернули за 30 дней — задание уходит из зачёта, выплата по нему откатывается (минусом на баланс реферера).<br/>
+        Если milestone уже был выплачен и задание отменили — <b>списываем сумму с баланса реферера</b> (тоже в минус, если баланс пуст). См. настройку «Списание с баланса при отмене после выплаты».
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Карточка реферала: Алексей -->
+<div class="crm-modal-overlay" id="crm-modal-ref-alexey">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Карточка реферала · Алексей Никитин</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('ref-alexey')">×</button>
+    </div>
+    <div class="crm-modal-body">
+
+      <div class="ref-card-head">
+        <div class="ref-card-avatar">АН</div>
+        <div class="ref-card-info">
+          <div class="ref-card-name">Алексей Никитин</div>
+          <div class="ref-card-meta">+7 999 ***-21-78 · ИНН 7723*****34 · МСК<br/>привёл: Сергей Петров (+7 916 ***-08-71) · ссылка wh.ru/r/M3R7Q1XA · 28.02.2026</div>
+        </div>
+        <div class="ref-card-sum">
+          <div class="amt">23</div>
+          <div class="lbl">подтв. и оплач.<br/>заданий</div>
+        </div>
+      </div>
+
+      <h4>Прогресс по milestone'ам</h4>
+      <div class="ms-grid">
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">Статус СМЗ<div class="ms-sub">02.03.2026</div></div><div class="ms-pay paid">+100 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">= 1 задание<div class="ms-sub">05.03.2026</div></div><div class="ms-pay paid">+500 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">5 заданий<div class="ms-sub">29.03.2026</div></div><div class="ms-pay paid">+1 000 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">10 заданий<div class="ms-sub">10.05.2026</div></div><div class="ms-pay paid">+900 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">Revenue share · 13 заданий сверху<div class="ms-sub">по 30–60 ₽ за задание, всего +40 ₽</div></div><div class="ms-pay paid">+40 ₽</div></div>
+      </div>
+
+      <h4>Корректировки счётчика</h4>
+      <div style="font-size:12px;color:#6b7785;padding:14px;background:#f6f8fb;border-radius:8px;text-align:center;">Корректировок не было — счётчик автоматический.</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Карточка реферала: Сергей -->
+<div class="crm-modal-overlay" id="crm-modal-ref-sergey">
+  <div class="crm-modal">
+    <div class="crm-modal-head">
+      <h3>Карточка реферала · Сергей Васильев</h3>
+      <button class="crm-modal-close" onclick="closeCrmModal('ref-sergey')">×</button>
+    </div>
+    <div class="crm-modal-body">
+
+      <div class="ref-card-head">
+        <div class="ref-card-avatar">СВ</div>
+        <div class="ref-card-info">
+          <div class="ref-card-name">Сергей Васильев</div>
+          <div class="ref-card-meta">+7 909 ***-72-86 · ИНН 7728*****90 · МСК<br/>привёл: Виктор Мельников (+7 921 ***-12-45) · ссылка wh.ru/r/A8X3K9P2 · 26.04.2026</div>
+        </div>
+        <div class="ref-card-sum">
+          <div class="amt">4</div>
+          <div class="lbl">подтв. и оплач.<br/>заданий</div>
+        </div>
+      </div>
+
+      <h4>Прогресс по milestone'ам</h4>
+      <div class="ms-grid">
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">Статус СМЗ<div class="ms-sub">27.04.2026</div></div><div class="ms-pay paid">+100 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick done">✓</div><div class="ms-body">= 1 задание<div class="ms-sub">30.04.2026 · одно из заданий отменено 05.05, списано −60 ₽</div></div><div class="ms-pay paid">+500 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick pending">…</div><div class="ms-body">5 заданий <span style="color:#8a6500;font-weight:600;">(1 осталось)</span><div class="ms-sub">прогресс 4 / 5</div></div><div class="ms-pay frozen">+1 000 ₽</div></div>
+        <div class="ms-row"><div class="ms-tick locked">🔒</div><div class="ms-body">10 заданий<div class="ms-sub">откроется после 5-го</div></div><div class="ms-pay locked">+900 ₽</div></div>
+      </div>
+
+      <h4>Корректировки счётчика</h4>
+      <div style="font-size:11px;color:#6b7785;text-transform:uppercase;letter-spacing:0.4px;display:grid;grid-template-columns:100px 1fr 140px 100px;gap:10px;padding-bottom:6px;border-bottom:1px solid #e6e9ee;">
+        <span>Когда</span><span>Причина</span><span>Кто</span><span>Δ счётчика</span>
+      </div>
+      <div class="adj-row">
+        <span class="when">05.05.2026</span>
+        <span>Задание TASK-43890 отменено заказчиком после подтверждения. Списание с баланса реферера −60 ₽.</span>
+        <span class="who">Авто-система<br/><span style="color:#6b7785;font-weight:400;font-size:11px;">clawback</span></span>
+        <span class="delta-minus">−1 задание</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function showSurface(name, ev) {
+    document.getElementById('surface-mobile').style.display = name === 'mobile' ? 'flex' : 'none';
+    document.getElementById('surface-crm').style.display   = name === 'crm'    ? 'flex' : 'none';
+    document.querySelectorAll('.surface-tabs button').forEach(b => b.classList.remove('active'));
+    ev.target.classList.add('active');
+  }
+  function showCrm(name, ev) {
+    document.querySelectorAll('.crm-screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('crm-' + name).classList.add('active');
+    document.querySelectorAll('.crm-tabs button').forEach(b => b.classList.remove('active'));
+    ev.target.classList.add('active');
+  }
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function openCrmModal(name) { document.getElementById('crm-modal-' + name).classList.add('show'); }
+  function closeCrmModal(name) { document.getElementById('crm-modal-' + name).classList.remove('show'); }
+
+  // период-селекторы — переключение active-класса
+  function setPeriod(btn, scope, value) {
+    const row = btn.closest('.period-row');
+    row.querySelectorAll('.period-presets button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // синхронизация контактов из CRM настроек в мобилку
+  function syncContact(channel, value) {
+    document.querySelectorAll('[data-contact="' + channel + '"]').forEach(el => {
+      el.textContent = value;
+    });
+  }
+
+  // Шаблон сообщения при копировании реф-ссылки
+  const REF_SHARE_TEMPLATE = "Я подрабатываю в Рабочих руках, давай со мной: {link}\n\nРегистрируйся по этой ссылке — после твоего 1-го задания мне капнет бонус, а тебе — приоритет на задания в твоём районе.";
+
+  function copyRefMessage(link, btn) {
+    const text = REF_SHARE_TEMPLATE.replace('{link}', link);
+    const onSuccess = () => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Скопировано';
+      btn.style.background = '#e3f3ea';
+      btn.style.color = '#2c7a4a';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = '';
+        btn.style.color = '';
+        alert('В буфер обмена скопировано:\n\n' + text);
+      }, 600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess).catch(() => alert('Не удалось скопировать. Текст:\n\n' + text));
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); onSuccess(); } catch (e) { alert(text); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  // закрытие модалок по клику на оверлей
+  document.querySelectorAll('.crm-modal-overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(el => {
+    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); });
+  });
+
+  // график новых рефералов
+  (function() {
+    const wrap = document.getElementById('chart-new-refs');
+    if (!wrap) return;
+    const days = 90;
+    const maxBarHeight = 165;
+    let v = 8;
+    const values = [];
+    for (let i = 0; i < days; i++) {
+      v += (Math.random() - 0.4) * 3;
+      v = Math.max(2, Math.min(v, 35));
+      values.push(v);
+    }
+    const max = Math.max(...values);
+    values.forEach(val => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = ((val / max) * maxBarHeight) + 'px';
+      bar.dataset.v = Math.round(val) + ' рефералов';
+      wrap.appendChild(bar);
+    });
+  })();
+
+  // финансы — stacked bars
+  (function() {
+    const wrap = document.getElementById('stacked-fin');
+    if (!wrap) return;
+    const months = [
+      {ms: 80, rs: 40, b: 35, label: 'Янв'},
+      {ms: 95, rs: 55, b: 42, label: 'Фев'},
+      {ms: 120, rs: 78, b: 50, label: 'Мар'},
+      {ms: 145, rs: 102, b: 58, label: 'Апр'},
+      {ms: 86, rs: 64, b: 36, label: 'Май'}
+    ];
+    const containerMax = 220;
+    const dataMax = Math.max(...months.map(m => m.ms + m.rs + m.b));
+    const scale = (containerMax / dataMax) * 0.92;
+    months.forEach(m => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      col.title = `${m.label}: milestone ${(m.ms*1000)}₽, RS ${(m.rs*1000)}₽, бонусы реф. ${(m.b*1000)}₽`;
+      const segB = document.createElement('div');
+      segB.className = 'seg-bonus'; segB.style.height = (m.b * scale) + 'px';
+      const segRs = document.createElement('div');
+      segRs.className = 'seg-rs'; segRs.style.height = (m.rs * scale) + 'px';
+      const segMs = document.createElement('div');
+      segMs.className = 'seg-ms'; segMs.style.height = (m.ms * scale) + 'px';
+      col.appendChild(segB);
+      col.appendChild(segRs);
+      col.appendChild(segMs);
+      wrap.appendChild(col);
+    });
+  })();
+</script>
+</body>
+</html>
